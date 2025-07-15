@@ -1,0 +1,108 @@
+*{
+   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+body {
+    background: linear-gradient(135deg, #cccccc, #aaaaaa);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+.conteiner-central {
+    background-color: rgb(240, 240, 240);
+    border: solid;
+    width: 400px;
+    height: 500px;
+    border-radius: 30px;
+    box-shadow: inset 0 0 10px 30px rgba(255, 255, 255, 0.1), 0 0 15px rgb(253, 252, 252);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.conteiner-central form {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.conteiner-central form input {
+    border: 2px solid #cf3b00;
+    border-radius: 20px;
+    padding: 10px;
+    width: 100%;
+    box-shadow: 0 0 8px rgba(207, 59, 0, 0.2);
+    transition: box-shadow 0.3s ease;
+}
+
+.conteiner-central form input:focus {
+    outline: none;
+    box-shadow: 0 0 12px #cf3b00;
+}
+
+.conteiner-central form button {
+    background-color: #cf3b00;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease, transform 0.2s;
+
+}
+
+.conteiner-central form button:hover {
+    background-color: #a62f00;
+    transform: scale(1.05);
+
+}
+
+.conteiner-central {
+    transition: box-shadow 0.4s ease;
+}
+
+.conteiner-central:hover {
+    box-shadow: 0 0 30px #ff7a7a;
+}
+
+.logo img {
+    margin-bottom: 40px;
+    height: 200px;
+    width: 300px;
+}
+
+.aba {
+    display: none;
+}
+
+.aba.ativa {
+    display: block;
+}
+
+.abas-nav {
+    margin-bottom: 20px;
+}
+
+.abas-nav button {
+    background-color: #ffffff;
+    border: 2px solid #cf3b00;
+    color: #cf3b00;
+    border-radius: 20px;
+    padding: 8px 16px;
+    cursor: pointer;
+    margin-right: 5px;
+    transition: all 0.3s ease;
+}
+.abas-nav button:hover {
+    background-color: #cf3b00;
+    color: white;
+}
+

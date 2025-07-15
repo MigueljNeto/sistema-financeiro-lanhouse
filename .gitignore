@@ -1,0 +1,21 @@
+# Ignorar arquivos sensíveis e desnecessários
+
+# Dados de conexão com o banco
+includes/servidor.php
+
+# Arquivos temporários, backups e bancos locais
+*.log
+*.sql
+*.db
+*.bak
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+
+# Dependências (caso um dia use composer ou npm)
+vendor/
+node_modules/
+
+# Arquivo de ambiente (caso use no futuro)
+*.env

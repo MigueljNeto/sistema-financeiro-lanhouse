@@ -1,0 +1,90 @@
+   
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #cccccc, #aaaaaa);
+    margin: 40px;
+}
+
+.nav{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: white;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    padding: 10px;
+    border-radius: 10px; 
+    width: 80%;
+    margin: auto;
+    
+}
+.nav h1 {
+    font-size: 24px;
+    color: black;
+}
+.nav form{
+    display: flex;
+    align-items: center ;
+    gap: 10px;
+}
+
+.nav input{
+    border: none;
+    border-radius: 5px;
+    padding: 5px 10px;
+    background-color:rgb(240, 240, 240);
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.nav button {
+    background-color: #cf3b00;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.nav button:hover {
+    background-color: #a62f00;
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+}
+
+table {
+    width: 80%;
+    margin: auto;
+    margin-top: 10px;
+    border-collapse: collapse;
+    background-color: white;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+th, td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    text-align: center;
+}
+
+th {
+    background-color: #c01515;
+    color: white;
+    text-align: center;
+}
+
+tr:hover {
+    background-color: #f1f1f1;
+}
+
+td:nth-child(2) {
+    font-weight: bold;
+    color: green;
+    text-align: center;
+}
