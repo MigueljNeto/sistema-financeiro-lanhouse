@@ -13,9 +13,3 @@ includes/servidor.php
 .DS_Store
 Thumbs.db
 
-# Dependências (caso um dia use composer ou npm)
-vendor/
-node_modules/
-
-# Arquivo de ambiente (caso use no futuro)
-*.env
