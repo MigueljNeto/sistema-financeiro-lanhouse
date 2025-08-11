@@ -141,109 +141,74 @@ if ($resultado && $linha = $resultado->fetch_assoc()) {
         </div>
     </div>
 
-
-
     <div class="conteiner_contador">
-
-        <div class="contador">
-            <h2><img src="../imagens/465.png" alt=""></h2>
-            <h1>MAQUINA 1</h1>
-
-            <div class="relogio">
-                <h1 id="idDoRelogio">00:00</h1>
-            </div>
-
-            <div>
-                <button id="btnIniciar1"
-                    onclick="iniciarContador('idDoRelogio', 'btnIniciar1', 'btnParar1')">INICIAR</button>
-                <button id="btnParar1" style="display: none;" onclick="pararContador()">PARAR</button>
-
-            </div>
-            <div>
-                <button onclick=" finalizarmaquina('idDoRelogio, BtnIniciar1, btnParar1')">FINALIZAR</button>
-            </div>
-            <div>
-                <button onclick="abrirModal('modal-relogio1')">VERIFICAR SERVIÇOS</button>
-            </div>
-
+        <div class="add">
+            <button onclick="abrirModal('modal-maquina')">
+                <h1>+</h1>
+            </button>
         </div>
 
-        <div class="contador">
-            <h2><img src="../imagens/465.png" alt=""></h2>
-            <h1>MAQUINA 2</h1>
-
-            <div class="relogio">
-                <h1 id="idDoRelogio">00:00</h1>
-            </div>
-
-            <div>
-                <button id="btnIniciar1"
-                    onclick="iniciarContador('idDoRelogio', 'btnIniciar1', 'btnParar1')">INICIAR</button>
-                <button id="btnParar1" style="display: none;" onclick="pararContador()">PARAR</button>
-
-            </div>
-            <div>
-                <button onclick=" finalizarmaquina('idDoRelogio, BtnIniciar1, btnParar1')">FINALIZAR</button>
-            </div>
-            <div>
-                <button onclick="abrirModal('modal-relogio1')">VERIFICAR SERVIÇOS</button>
-            </div>
-
-        </div>
-
-        <div class="contador">
-            <h2><img src="../imagens/465.png" alt=""></h2>
-            <h1>MAQUINA 3</h1>
-
-            <div class="relogio">
-                <h1 id="idDoRelogio">00:00</h1>
-            </div>
-
-            <div>
-                <button id="btnIniciar1"
-                    onclick="iniciarContador('idDoRelogio', 'btnIniciar1', 'btnParar1')">INICIAR</button>
-                <button id="btnParar1" style="display: none;" onclick="pararContador()">PARAR</button>
-
-            </div>
-            <div>
-                <button onclick=" finalizarmaquina('idDoRelogio, BtnIniciar1, btnParar1')">FINALIZAR</button>
-            </div>
-            <div>
-                <button onclick="abrirModal('modal-relogio1')">VERIFICAR SERVIÇOS</button>
-            </div>
-
-        </div>
-
-
-        <div class="contador">
-            <h2><img src="../imagens/465.png" alt=""></h2>
-            <h1>MAQUINA 4</h1>
-
-            <div class="relogio">
-                <h1 id="idDoRelogio">00:00</h1>
-            </div>
-
-            <div>
-                <button id="btnIniciar1"
-                    onclick="iniciarContador('idDoRelogio', 'btnIniciar1', 'btnParar1')">INICIAR</button>
-                <button id="btnParar1" style="display: none;" onclick="pararContador()">PARAR</button>
-
-            </div>
-            <div>
-                <button onclick=" finalizarmaquina('idDoRelogio, BtnIniciar1, btnParar1')">FINALIZAR</button>
-            </div>
-            <div>
-                <button onclick="abrirModal('modal-relogio1')">VERIFICAR SERVIÇOS</button>
-            </div>
-
-        </div>
-        <!-- <?php
-        for ($contador = 0; $contador <= 3; $contador++) {
-            ?>          
         <?php
-        }
-        ?>  -->
 
+        $resultado = mysqli_query($conn, "SELECT * FROM maquinas");
+
+        while ($maquina = mysqli_fetch_assoc($resultado)) {
+           
+            echo 
+                '<div class="contador">
+                    <div>
+                    
+                        <button type="button"  class="apagar" onclick="abrirModalExluir(<?=$maquina['id']?>)">X</button>
+                        
+                    </div>
+                    <h2><img src="../imagens/465.png" alt=""></h2>
+                    <h1>' . strtoupper(htmlspecialchars($maquina['nome'])) . '</h1>
+
+
+                    <div class="relogio">
+                        <h1 id="relogio_' . $maquina['id'] . '">00:00</h1>
+                    </div>
+
+                    <div>
+                        <button id="btnIniciar_' . $maquina['id'] . '" onclick="iniciarContador(\'relogio_' . $maquina['id'] . '\', \'btnIniciar_' . $maquina['id'] . '\', \'btnParar_' . $maquina['id'] . '\')">INICIAR</button>
+                        <button id="btnParar_' . $maquina['id'] . '" style="display: none;" onclick="pararContador()">PARAR</button>
+                    </div>
+
+                    <div>
+                        <button onclick="finalizarmaquina(\'relogio_' . $maquina['id'] . '\', \'btnIniciar_' . $maquina['id'] . '\', \'btnParar_' . $maquina['id'] . '\')">FINALIZAR</button>
+                    </div>
+
+                    <div>
+                        <button onclick="abrirModal(\'modal-relogio' . $maquina['id'] . '\')">VERIFICAR SERVIÇOS</button>
+                    </div>
+                    
+                </div>
+                
+                
+            ';}
+        ?>
+    </div>
+    <div id="modalExcluir" class="fundo-modal" style="display:none;">
+        <div class="modal-conteudo">
+            <h2>Confirmar Exclusão</h2>
+            <p>Tem certeza que deseja excluir esta máquina?</p>
+            <form id="formExcluir" action="excluir_maquina.php" method="POST">
+                <input type="hidden" name="id" id="idExcluir">
+                <button type="submit">Sim, excluir</button>
+                <button type="button" onclick="fecharModalExcluir()">Cancelar</button>
+            </form>
+        </div>
+    </div>
+    <div id="modal-maquina" class="fundo-modal">
+        <div class="caixa-modal-maq">
+            <button class="botao-fechar" onclick="fecharModal('modal-maquina')">X</button>
+            <h2>Registrar Depósito</h2>
+            <form action="maquina.php" method="post">
+                <label for="">Nome da Maquina:</label>
+                <input type="text" name="maquina" required>
+                <button type="submit">ENVIAR</button>
+            </form>
+        </div>
     </div>
 </body>
 

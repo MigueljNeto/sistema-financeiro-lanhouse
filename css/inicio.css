@@ -14,7 +14,6 @@ body {
    align-items: center;
    gap: 60%;
    background: rgb(240, 240, 240);
-   ;
    border-radius: 30px;
    padding: 10px 20px;
 }
@@ -226,6 +225,84 @@ select:focus {
 .caixa-modal form input:focus {
    outline: none;
    box-shadow: 0 0 12px #cf3b00;
+}
+
+.caixa-modal-maq {
+   background: white;
+   padding: 30px;
+   border-radius: 20px;
+   width: 400px;
+   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+   display: flex;
+   flex-direction: column;
+   gap: 10px;
+   transform: translateY(-20px);
+   opacity: 0;
+   transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.fundo-modal.ativo .caixa-modal-maq {
+   transform: translateY(0);
+   opacity: 1;
+}
+
+.add {
+   margin-top: 50px;
+   border-radius: 20px;
+   display: flex;
+   justify-content: center;
+   align-items: center;
+   background: #f0f0f0;
+   width: 320px;
+   height: 550px;
+   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+   padding: 20px;
+   transition: transform 0.3s ease, opacity 0.3s ease, background-color 0.3s ease;
+   cursor: pointer;
+   opacity: 0.6;
+}
+
+.add:hover {
+   opacity: 1;
+   transform: scale(1.05);
+   background-color: #e2e2e2;
+   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.add button {
+   width: 320px;
+   height: 550px;
+   font-size: 80px;
+   font-weight: bold;
+   color: #333;
+   background: none;
+   border: none;
+   cursor: pointer;
+   outline: none;
+   transition: transform 0.2s ease, color 0.3s ease;
+}
+
+.add button:hover {
+   transform: scale(1.05);
+   color: #222;
+}
+
+.apagar{
+   position: absolute;
+   top: 10px;
+   right: 15px;
+   background: none;
+   border: none;
+   font-size: 28px;
+   font-weight: bold;
+   cursor: pointer;
+   color: #444;
+   transition: color 0.2s ease;
+}
+
+.apagar:hover {
+   color: #cf3b00;
+   transform: scale(1.2);
 }
 
 .conteiner_contador {
