@@ -1,15 +1,15 @@
 <?php
-require_once __DIR__ . '/../includes/verifica_sessao.php';
-require_once "../includes/servidor.php";
+    require_once __DIR__ . '/../includes/verifica_sessao.php';
+    require_once "../includes/servidor.php";
 
-$sql = "SELECT SUM(valor) AS total FROM deposito";
-$resultado = $conn->query($sql);
+    $sql = "SELECT SUM(valor) AS total FROM deposito";
+    $resultado = $conn->query($sql);
 
-$totalDeposito = 0.00;
+    $totalDeposito = 0.00;
 
-if ($resultado && $linha = $resultado->fetch_assoc()) {
-    $totalDeposito = $linha['total'] ?? 0.00;
-}
+    if ($resultado && $linha = $resultado->fetch_assoc()) {
+        $totalDeposito = $linha['total'] ?? 0.00;
+    }
 ?>
 
 <!DOCTYPE html>
@@ -153,12 +153,27 @@ if ($resultado && $linha = $resultado->fetch_assoc()) {
         $resultado = mysqli_query($conn, "SELECT * FROM maquinas");
 
         while ($maquina = mysqli_fetch_assoc($resultado)) {
-           
+            $id = $maquina['id']; 
+            $status = $maquina['status'];          
+            $inicio = $maquina['inicio'];          
+
+            $elapsed = 0;
+            if ($status === 'ocupada' && $inicio) {
+                $stmt = mysqli_prepare($conn, "SELECT COALESCE(SUM(tempo_segundos),0) FROM tempo_uso WHERE maquina_id = ? AND inicio >= ?");
+                mysqli_stmt_bind_param($stmt, "is", $id, $inicio);
+                mysqli_stmt_execute($stmt);
+                mysqli_stmt_bind_result($stmt, $salvo);
+                mysqli_stmt_fetch($stmt);
+                mysqli_stmt_close($stmt);
+
+                $elapsed = (int)$salvo + (time() - strtotime($inicio)); // segundos
+            }
+            
             echo 
-                '<div class="contador">
+                '<div class="contador" data-id="'.$id.'" data-status="'.$status.'" data-elapsed="'.$elapsed.'" >
                     <div>
                     
-                        <button type="button"  class="apagar" onclick="abrirModalExluir(<?=$maquina['id']?>)">X</button>
+                        <button class="apagar" onclick="abrirModalExcluir(' . $maquina['id'] . ')">X</button>
                         
                     </div>
                     <h2><img src="../imagens/465.png" alt=""></h2>
@@ -166,39 +181,67 @@ if ($resultado && $linha = $resultado->fetch_assoc()) {
 
 
                     <div class="relogio">
-                        <h1 id="relogio_' . $maquina['id'] . '">00:00</h1>
+                        <h1 id="relogio_' . $maquina['id'] . '">00:00:00</h1>
                     </div>
 
                     <div>
-                        <button id="btnIniciar_' . $maquina['id'] . '" onclick="iniciarContador(\'relogio_' . $maquina['id'] . '\', \'btnIniciar_' . $maquina['id'] . '\', \'btnParar_' . $maquina['id'] . '\')">INICIAR</button>
-                        <button id="btnParar_' . $maquina['id'] . '" style="display: none;" onclick="pararContador()">PARAR</button>
+                        <button id="btnIniciar_' . $id . '" onclick="iniciarContador(' . $id . ')">INICIAR</button>
+                        <button id="btnParar_' . $id . '" style="display:none;" onclick="pararContador(' . $id . ')">PARAR</button>
                     </div>
 
                     <div>
-                        <button onclick="finalizarmaquina(\'relogio_' . $maquina['id'] . '\', \'btnIniciar_' . $maquina['id'] . '\', \'btnParar_' . $maquina['id'] . '\')">FINALIZAR</button>
+                        <button onclick="finalizarMaquina(' . $id . ')">FINALIZAR</button>
                     </div>
+
 
                     <div>
                         <button onclick="abrirModal(\'modal-relogio' . $maquina['id'] . '\')">VERIFICAR SERVIÇOS</button>
                     </div>
                     
+
+                    <div id="modal_' . $id . '" class="modal" style="display:none;">
+                        <div class="modal-conteudo">
+                            <span class="fechar" onclick="fecharModal(' . $id . ')">&times;</span>
+                            <h3>Serviços Máquina ' . strtoupper(htmlspecialchars($maquina['nome'])) . '</h3>
+
+                            <form id="form_servicos_' . $id . '" onsubmit="salvarServicos(event, ' . $id . ')">
+                                <label>Impressões:</label>
+                                <input type="number" name="impressoes" min="0" value="0"><br>
+
+                                <label>Scanners:</label>
+                                <input type="number" name="scanners" min="0" value="0"><br>
+
+                                <button type="submit">Salvar Serviços</button>
+                            </form>
+
+                            <div id="servicos_lista_' . $id . '">
+                                <!-- Serviços cadastrados aparecerão aqui -->
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
                 
             ';}
         ?>
     </div>
-    <div id="modalExcluir" class="fundo-modal" style="display:none;">
+
+
+
+
+    <div id="modalExcluir" class="modal" style="display:none;">
         <div class="modal-conteudo">
+            <button class="botao-fechar" onclick="fecharModalExcluir()">X</button>
             <h2>Confirmar Exclusão</h2>
             <p>Tem certeza que deseja excluir esta máquina?</p>
-            <form id="formExcluir" action="excluir_maquina.php" method="POST">
+            <form id="formExcluir" action="maquina.php" method="post">
                 <input type="hidden" name="id" id="idExcluir">
                 <button type="submit">Sim, excluir</button>
                 <button type="button" onclick="fecharModalExcluir()">Cancelar</button>
             </form>
         </div>
     </div>
+
     <div id="modal-maquina" class="fundo-modal">
         <div class="caixa-modal-maq">
             <button class="botao-fechar" onclick="fecharModal('modal-maquina')">X</button>
