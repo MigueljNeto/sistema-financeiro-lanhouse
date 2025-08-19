@@ -1,0 +1,128 @@
+.caixa-modal {
+   background: white;
+   padding: 30px;
+   border-radius: 20px;
+   width: 400px;
+   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+   display: flex;
+   flex-direction: column;
+   gap: 10px;
+
+   transform: translateY(-20px);
+   opacity: 0;
+   transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.fundo-modal.ativo .caixa-modal {
+   transform: translateY(0);
+   opacity: 1;
+}
+
+.caixa-modal form {
+   display: flex;
+   flex-direction: column;
+   gap: 5px;
+}
+
+.caixa-modal form input {
+   border: none;
+   border-radius: 30px;
+   background-color: #fff;
+   padding: 10px;
+   box-shadow: 0 0 8px rgba(207, 59, 0, 0.2);
+}
+
+.caixa-modal form input:focus {
+   outline: none;
+   box-shadow: 0 0 12px #cf3b00;
+}
+
+.caixa-modal form input:focus {
+   outline: none;
+   box-shadow: 0 0 12px #cf3b00;
+}
+
+.caixa-modal-maq {
+   background: white;
+   padding: 30px;
+   border-radius: 20px;
+   width: 400px;
+   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+   display: flex;
+   flex-direction: column;
+   gap: 10px;
+   transform: translateY(-20px);
+   opacity: 0;
+   transition: transform 0.3s ease, opacity 0.3s ease;
+} 
+
+.fundo-modal.ativo .caixa-modal-maq {
+   transform: translateY(0);
+   opacity: 1;
+} 
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.6);
+    display: none; /* começa escondido */
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-conteudo {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    max-width: 300px;
+    width: 100%;
+} 
+
+.modalMaqServ {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.6);
+    display: none; /* começa escondido */
+    align-items: center;
+    justify-content: center;
+}
+
+.modalMaq {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    max-width: 300px;
+    width: 100%;
+} 
+.modalMaq form {
+   display: flex;
+   flex-direction: column;
+   gap: 5px;
+}
+
+.modalMaq form input {
+   border: none;
+   text-align: center;
+   border-radius: 30px;
+   background-color: #fff;
+   padding: 10px;
+   box-shadow: 0 0 8px rgba(207, 59, 0, 0.2);
+}
+
+.modalMaq form input:focus {
+   outline: none;
+   box-shadow: 0 0 12px #cf3b00;
+}
+
+.modalMaq form input:focus {
+   outline: none;
+   box-shadow: 0 0 12px #cf3b00;
+}

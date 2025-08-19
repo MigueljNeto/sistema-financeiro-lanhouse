@@ -19,6 +19,11 @@
         }
     }
 
+    $id = $_GET['id'];
+
+    mysqli_query($conn, "DELETE FROM tempo_uso WHERE maquina_id = $id");
+
+    mysqli_query($conn, "DELETE FROM maquinas WHERE id = $id");
     if(isset($_POST['id'])){
         $id = intval ($_POST['id']);
 

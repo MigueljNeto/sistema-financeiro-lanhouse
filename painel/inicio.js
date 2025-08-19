@@ -14,6 +14,18 @@ function fecharModal(id) {
     }, 300);
 }
 
+function abrirModalMaquina(id) {
+    const modal = document.getElementById("modalMaquina_" + id);
+    modal.style.display = "flex";
+    setTimeout(() => modal.classList.add("ativo"), 10);
+}
+
+function fecharModalMaquina(id) {
+    const modal = document.getElementById("modalMaquina_" + id);
+    modal.classList.remove("ativo");
+    setTimeout(() => modal.style.display = "none", 300);
+}
+
 function abrirModalExcluir(id) {
     document.getElementById("idExcluir").value = id;
     const modal = document.getElementById("modalExcluir");

@@ -10,6 +10,24 @@
     if ($resultado && $linha = $resultado->fetch_assoc()) {
         $totalDeposito = $linha['total'] ?? 0.00;
     }
+
+    
+    $result = $conn->query("SELECT SUM(valor) AS total_pago FROM pagamento");
+
+    $total_pago = 0;
+    if($result){
+        $row = $result->fetch_assoc();
+        $total_pago = $row['total_pago'] ?? 0;
+    }
+
+    $sql = "SELECT SUM(valor) as total FROM servicos";
+    $result = $conn->query($sql);
+
+    $total = 0.00;
+
+    if ($result && $row = $result->fetch_assoc()) {
+        $total = $row['total'] ?? 0;
+    }
 ?>
 
 <!DOCTYPE html>
@@ -19,6 +37,7 @@
     <meta charset="UTF-8" />
     <title>Pagina Inicial</title>
     <link rel="stylesheet" href="../css/inicio.css">
+    <link rel="stylesheet" href="../css/modal.css">
     <script src="inicio.js"></script>
 </head>
 
@@ -32,13 +51,17 @@
             <h2>
                 <img src="../imagens/user.png" alt="user">
                 <?php
-                echo $_SESSION['usuario'];
-                ?>
+                    echo $_SESSION['usuario'];
+                    ?>
                 <img src="../imagens/seta-baixo.png" alt="seta">
             </h2>
         </div>
     </div>
+    <div class="conteiner_principal">
+        <div>
 
+        </div>
+    </div>
     <div class="conteiner_aba">
         <div class="abas">
             <h1>
@@ -62,7 +85,7 @@
                 CONTAS PAGAS
             </h1>
             <div class="valor">
-                <h1>R$: 0,00</h1>
+                <h1>R$: <?php echo number_format($total_pago, 2, ',', '.'); ?></h1>
             </div>
             <div>
                 <button onclick="abrirModal('modal-pagamento')">REGISTRAR PAGAMENTO</button>
@@ -77,7 +100,7 @@
                 SERVIÇOS
             </h1>
             <div class="valor">
-                <h1>R$: 0,00</h1>
+                <h1>R$: <?php echo number_format($total, 2, ',', '.'); ?></h1>
             </div>
             <div>
                 <button onclick="abrirModal('modal-servico')">REGISTRAR SERVIÇOS</button>
@@ -127,13 +150,19 @@
             <button class="botao-fechar" onclick="fecharModal('modal-servico')">X</button>
             <h2>Registrar Depósito</h2>
             <form action="servico.php" method="post">
+                <select name="usuarios" id="usuarios">
+                    <option value="">Funcionario</option>
+                    <option value="miguel">Miguel</option>
+                    <option value="romulo">Romulo</option>
+                    <option value="bobgudes">Bobbie Goods</option>
+                </select>
                 <select name="formas" id="formas">
                     <option value="">Forma de Pagamento</option>
                     <option value="pix">Pix</option>
                     <option value="dinheiro">Dinheiro</option>
                 </select>
                 <label for="">Valor:</label>
-                <input type="number" name="valor" placeholder="VALOR" required>
+                <input type="number" name="valor" step="0.01" placeholder="VALOR" required>
                 <label for="">Observação:</label>
                 <input type="text" name="observacao" placeholder="OBSERVAÇÃO">
                 <button type="submit">ENVIAR</button>
@@ -142,6 +171,7 @@
     </div>
 
     <div class="conteiner_contador">
+
         <div class="add">
             <button onclick="abrirModal('modal-maquina')">
                 <h1>+</h1>
@@ -149,62 +179,61 @@
         </div>
 
         <?php
+            $resultado = mysqli_query($conn, "SELECT * FROM maquinas");
 
-        $resultado = mysqli_query($conn, "SELECT * FROM maquinas");
+            while ($maquina = mysqli_fetch_assoc($resultado)) {
+                $id = $maquina['id']; 
+                $status = $maquina['status'];          
+                $inicio = $maquina['inicio'];          
 
-        while ($maquina = mysqli_fetch_assoc($resultado)) {
-            $id = $maquina['id']; 
-            $status = $maquina['status'];          
-            $inicio = $maquina['inicio'];          
+                $elapsed = 0;
+                
+                if ($status === 'ocupada' && $inicio) {
+                    $stmt = mysqli_prepare($conn, "SELECT COALESCE(SUM(tempo_segundos),0) FROM tempo_uso WHERE maquina_id = ? AND inicio >= ?");
+                    mysqli_stmt_bind_param($stmt, "is", $id, $inicio);
+                    mysqli_stmt_execute($stmt);
+                    mysqli_stmt_bind_result($stmt, $salvo);
+                    mysqli_stmt_fetch($stmt);
+                    mysqli_stmt_close($stmt);
 
-            $elapsed = 0;
-            if ($status === 'ocupada' && $inicio) {
-                $stmt = mysqli_prepare($conn, "SELECT COALESCE(SUM(tempo_segundos),0) FROM tempo_uso WHERE maquina_id = ? AND inicio >= ?");
-                mysqli_stmt_bind_param($stmt, "is", $id, $inicio);
-                mysqli_stmt_execute($stmt);
-                mysqli_stmt_bind_result($stmt, $salvo);
-                mysqli_stmt_fetch($stmt);
-                mysqli_stmt_close($stmt);
-
-                $elapsed = (int)$salvo + (time() - strtotime($inicio)); // segundos
-            }
-            
-            echo 
-                '<div class="contador" data-id="'.$id.'" data-status="'.$status.'" data-elapsed="'.$elapsed.'" >
-                    <div>
+                    $elapsed = (int)$salvo + (time() - strtotime($inicio)); // segundos
+                }
+                
+                echo '
                     
-                        <button class="apagar" onclick="abrirModalExcluir(' . $maquina['id'] . ')">X</button>
+                    <div class="contador" data-id="'.$id.'" data-status="'.$status.'" data-elapsed="'.$elapsed.'" >
                         
+                        <h2><img src="../imagens/465.png" alt=""></h2>
+                        <h1>' . strtoupper(htmlspecialchars($maquina['nome'])) . '</h1>
+
+                        <div class="relogio">
+                            <h1 id="relogio_' . $maquina['id'] . '">00:00:00</h1>
+                        </div>
+
+                        <div>
+                            <button id="btnIniciar_' . $id . '" onclick="iniciarContador(' . $id . ')">INICIAR</button>
+                            <button id="btnParar_' . $id . '" style="display:none;" onclick="pararContador(' . $id . ')">PARAR</button>
+                        </div>
+                            
+                        <div>
+                            <button onclick="finalizarMaquina(' . $id . ')">FINALIZAR</button>
+                        </div>
+
+                        <div>
+                            <button onclick="abrirModalMaquina(' . $maquina['id'] . ')">VERIFICAR SERVIÇOS</button>
+                        </div>
+
+                        <div>
+                            <button class="apagar" onclick="abrirModalExcluir(' . $maquina['id'] . ')">EXCLUIR</button>
+                        </div>
                     </div>
-                    <h2><img src="../imagens/465.png" alt=""></h2>
-                    <h1>' . strtoupper(htmlspecialchars($maquina['nome'])) . '</h1>
 
+                    <div id="modalMaquina_'.$id.'" class="modalMaqServ" style="display:none;">
+                        <div class="modalMaq">
+                            <button class="botao-fechar" onclick="fecharModalMaquina('.$id.')">X</button>
+                            <h3>Serviços - '.strtoupper(htmlspecialchars($maquina['nome'])).'</h3>
 
-                    <div class="relogio">
-                        <h1 id="relogio_' . $maquina['id'] . '">00:00:00</h1>
-                    </div>
-
-                    <div>
-                        <button id="btnIniciar_' . $id . '" onclick="iniciarContador(' . $id . ')">INICIAR</button>
-                        <button id="btnParar_' . $id . '" style="display:none;" onclick="pararContador(' . $id . ')">PARAR</button>
-                    </div>
-
-                    <div>
-                        <button onclick="finalizarMaquina(' . $id . ')">FINALIZAR</button>
-                    </div>
-
-
-                    <div>
-                        <button onclick="abrirModal(\'modal-relogio' . $maquina['id'] . '\')">VERIFICAR SERVIÇOS</button>
-                    </div>
-                    
-
-                    <div id="modal_' . $id . '" class="modal" style="display:none;">
-                        <div class="modal-conteudo">
-                            <span class="fechar" onclick="fecharModal(' . $id . ')">&times;</span>
-                            <h3>Serviços Máquina ' . strtoupper(htmlspecialchars($maquina['nome'])) . '</h3>
-
-                            <form id="form_servicos_' . $id . '" onsubmit="salvarServicos(event, ' . $id . ')">
+                            <form id="form_servicos_'.$id.'" onsubmit="salvarServicos(event, '.$id.')">
                                 <label>Impressões:</label>
                                 <input type="number" name="impressoes" min="0" value="0"><br>
 
@@ -214,32 +243,30 @@
                                 <button type="submit">Salvar Serviços</button>
                             </form>
 
-                            <div id="servicos_lista_' . $id . '">
-                                <!-- Serviços cadastrados aparecerão aqui -->
-                            </div>
+                            <div id="servicos_lista_'.$id.'"></div>
                         </div>
                     </div>
-                </div>
-                
-                
-            ';}
+
+                    <div id="modalExcluir" class="modal" style="display:none;">
+                        <div class="modal-conteudo">
+                            
+                            <button class="botao-fechar" onclick="fecharModalExcluir()">X</button>
+
+                            <h2>Confirmar Exclusão</h2>
+                            <p>Tem certeza que deseja excluir esta máquina?</p>
+
+                            <form id="formExcluir" action="maquina.php" method="post">
+                                <input type="hidden" name="id" id="idExcluir">
+                                <button type="submit">Sim, excluir</button>
+                                <button type="button" onclick="fecharModalExcluir()">Cancelar</button>
+                            </form>
+
+                        </div>
+                    </div>
+
+                ';
+            }
         ?>
-    </div>
-
-
-
-
-    <div id="modalExcluir" class="modal" style="display:none;">
-        <div class="modal-conteudo">
-            <button class="botao-fechar" onclick="fecharModalExcluir()">X</button>
-            <h2>Confirmar Exclusão</h2>
-            <p>Tem certeza que deseja excluir esta máquina?</p>
-            <form id="formExcluir" action="maquina.php" method="post">
-                <input type="hidden" name="id" id="idExcluir">
-                <button type="submit">Sim, excluir</button>
-                <button type="button" onclick="fecharModalExcluir()">Cancelar</button>
-            </form>
-        </div>
     </div>
 
     <div id="modal-maquina" class="fundo-modal">
