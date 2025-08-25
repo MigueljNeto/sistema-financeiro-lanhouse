@@ -2,6 +2,7 @@
     require_once __DIR__ . '/../includes/verifica_sessao.php';
     require_once "../includes/servidor.php";
 
+    //Somando os Valores do Deposito
     $sql = "SELECT SUM(valor) AS total FROM deposito";
     $resultado = $conn->query($sql);
 
@@ -11,7 +12,7 @@
         $totalDeposito = $linha['total'] ?? 0.00;
     }
 
-    
+    //Somando os Valores dos Pagamentos    
     $result = $conn->query("SELECT SUM(valor) AS total_pago FROM pagamento");
 
     $total_pago = 0;
@@ -20,6 +21,7 @@
         $total_pago = $row['total_pago'] ?? 0;
     }
 
+    //Somando os Valores dos Serviços
     $sql = "SELECT SUM(valor) as total FROM servicos";
     $result = $conn->query($sql);
 
@@ -28,6 +30,48 @@
     if ($result && $row = $result->fetch_assoc()) {
         $total = $row['total'] ?? 0;
     }
+
+    //Buscando os Valores pra inserir nos graficos
+    $sqlFunc = "SELECT usuario, SUM(valor) as total FROM servicos GROUP BY usuario";
+    $resFunc = $conn->query($sqlFunc);
+
+    $usuario = [];
+    $valoresUsuarios = [];
+
+    while ($row = $resFunc -> fetch_assoc()){
+        $usuario[] = $row['usuario'];
+        $valoresUsuarios[] = $row['total'];
+    }
+
+    $sqlPag = "SELECT tipo_pagamento, SUM(valor) as total FROM servicos GROUP BY tipo_pagamento";
+    $resPag = $conn->query($sqlPag);
+
+    $formas = [];
+    $valoresPag = [];
+
+    while ($row = $resPag -> fetch_assoc()){
+        $formas[] = $row['tipo_pagamento'];
+        $valoresPag[] = $row['total'];
+    }
+
+    $hoje = date('Y-m-d');
+
+    // Soma depósitos do dia
+    $sqlDeposito = "SELECT IFNULL(SUM(valor), 0) AS totalDeposito 
+                    FROM deposito 
+                    WHERE DATE(data) = '$hoje'";
+    $resDep = $conn->query($sqlDeposito);
+    $deposito = $resDep->fetch_assoc()['totalDeposito'];
+
+    // Soma pagamentos do dia
+    $sqlPagamento = "SELECT IFNULL(SUM(valor), 0) AS totalPagamento 
+                    FROM pagamento 
+                    WHERE DATE(data_hora) = '$hoje'";
+    $resPag = $conn->query($sqlPagamento);
+    $pagamento = $resPag->fetch_assoc()['totalPagamento'];
+
+    // Saldo disponível no dia
+    $saldoDia = $deposito - $pagamento;
 ?>
 
 <!DOCTYPE html>
@@ -39,6 +83,7 @@
     <link rel="stylesheet" href="../css/inicio.css">
     <link rel="stylesheet" href="../css/modal.css">
     <script src="inicio.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
@@ -58,10 +103,116 @@
         </div>
     </div>
     <div class="conteiner_principal">
-        <div>
-
+        <div class="graficoFunc">
+            <h2>Total por Funcionário</h2>
+            <canvas id="graficoFuncionario"></canvas>
         </div>
+        <div class="graficoPag">
+            <h2>Total por Forma de Pagamento</h2>
+            <canvas id="graficoPagamento"></canvas>
+        </div>
+        <div class="graficoSald">
+            <div>
+                <h2>Saldo disponível hoje: R$ <?php echo number_format($saldoDia, 2, ',', '.'); ?></h2>
+            </div>
+            <canvas id="graficoDia"></canvas>
+        </div>    
+
     </div>
+
+    <script>
+
+        const ctxFunc = document.getElementById('graficoFuncionario').getContext('2d');
+        new Chart(ctxFunc, {
+            type: 'bar',
+            data: {
+                labels: <?= json_encode($usuario) ?>,
+                datasets: [{
+                    label: 'Total (R$)',
+                    data: <?= json_encode($valoresUsuarios) ?>,
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.6)',  // vermelho
+                        'rgba(54, 162, 235, 0.6)',  // azul
+                        'rgba(255, 206, 86, 0.6)'   // amarelo
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)'
+                    ],
+                    borderWidth: 1,
+                    borderRadius: 8 // borda arredondada das barras
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { 
+                    legend: { display: false },
+                    tooltip: { 
+                        callbacks: {
+                            label: ctx => `R$ ${ctx.raw.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`
+                        }
+                    }
+                },
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
+        });
+
+            const ctxPag = document.getElementById('graficoPagamento').getContext('2d');
+            new Chart(ctxPag, {
+                type: 'pie',
+                data: {
+                    labels: <?= json_encode($formas) ?>,
+                    datasets: [{
+                        data: <?= json_encode($valoresPag) ?>,
+                        backgroundColor: [
+                            'rgba(75, 192, 192, 0.6)',  // verde água
+                            'rgba(255, 159, 64, 0.6)',  // laranja
+                            'rgba(255, 99, 132, 0.6)',  // vermelho (se houver mais)
+                            'rgba(54, 162, 235, 0.6)'   // azul (se houver mais)
+                        ],
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { font: { size: 14 } }
+                        },
+                        tooltip: { 
+                            callbacks: {
+                                label: ctx => `R$ ${ctx.raw.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`
+                            }
+                        }
+                    }
+                }
+            });
+
+            const ctx = document.getElementById('graficoDia').getContext('2d');
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Depósitos', 'Pagamentos', 'Saldo'],
+                    datasets: [{
+                        label: 'Valores do dia',
+                        data: [<?php echo $deposito; ?>, <?php echo $pagamento; ?>, <?php echo $saldoDia; ?>],
+                        backgroundColor: ['green','red','blue']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+    </script>
+
     <div class="conteiner_aba">
         <div class="abas">
             <h1>
@@ -198,10 +349,18 @@
 
                     $elapsed = (int)$salvo + (time() - strtotime($inicio)); // segundos
                 }
+
+                $serv = $conn->query("SELECT impressoes, scanners FROM servmaq WHERE id_maquina = {$maquina['id']}");
+                $impressoes = 0;
+                $scanners = 0;
+                
+                if ($serv && $row = $serv->fetch_assoc()) {
+                    $impressoes = (int)$row['impressoes'];
+                    $scanners = (int)$row['scanners'];
+                }
                 
                 echo '
-                    
-                    <div class="contador" data-id="'.$id.'" data-status="'.$status.'" data-elapsed="'.$elapsed.'" >
+                    <div class="contador" data-id="'.$id.'" data-status="'.$status.'" data-elapsed="'.$elapsed.'">
                         
                         <h2><img src="../imagens/465.png" alt=""></h2>
                         <h1>' . strtoupper(htmlspecialchars($maquina['nome'])) . '</h1>
@@ -209,12 +368,24 @@
                         <div class="relogio">
                             <h1 id="relogio_' . $maquina['id'] . '">00:00:00</h1>
                         </div>
+                        
+                        <!-- Resumo dos serviços -->
+                        <div class="resumo-servicos">
+                            <p>Impressões: <span id="impressoes_'.$id.'">'.$impressoes.'</span></p>
+                            <p>Scanners: <span id="scanners_'.$id.'">'.$scanners.'</span></p>
+                        </div>
+
+                         <!-- Atalhos rápidos -->
+                        <div class="atalhos-servicos">
+                            <button onclick="adicionarServico('.$id.', \'impressoes\')">+ Impressão</button>
+                            <button onclick="adicionarServico('.$id.', \'scanners\')">+ Scanner</button>
+                        </div>
 
                         <div>
                             <button id="btnIniciar_' . $id . '" onclick="iniciarContador(' . $id . ')">INICIAR</button>
                             <button id="btnParar_' . $id . '" style="display:none;" onclick="pararContador(' . $id . ')">PARAR</button>
                         </div>
-                            
+
                         <div>
                             <button onclick="finalizarMaquina(' . $id . ')">FINALIZAR</button>
                         </div>
@@ -228,6 +399,7 @@
                         </div>
                     </div>
 
+                    
                     <div id="modalMaquina_'.$id.'" class="modalMaqServ" style="display:none;">
                         <div class="modalMaq">
                             <button class="botao-fechar" onclick="fecharModalMaquina('.$id.')">X</button>
@@ -246,24 +418,6 @@
                             <div id="servicos_lista_'.$id.'"></div>
                         </div>
                     </div>
-
-                    <div id="modalExcluir" class="modal" style="display:none;">
-                        <div class="modal-conteudo">
-                            
-                            <button class="botao-fechar" onclick="fecharModalExcluir()">X</button>
-
-                            <h2>Confirmar Exclusão</h2>
-                            <p>Tem certeza que deseja excluir esta máquina?</p>
-
-                            <form id="formExcluir" action="maquina.php" method="post">
-                                <input type="hidden" name="id" id="idExcluir">
-                                <button type="submit">Sim, excluir</button>
-                                <button type="button" onclick="fecharModalExcluir()">Cancelar</button>
-                            </form>
-
-                        </div>
-                    </div>
-
                 ';
             }
         ?>

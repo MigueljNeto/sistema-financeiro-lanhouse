@@ -36,83 +36,10 @@ function fecharModalExcluir() {
     const modal = document.getElementById("modalExcluir");
     modal.style.display = "none";
 }
-// let startTime;
-// let intervalo;
-
-// function atualizarRelogio(idDoRelogio) {
-
-//     const tempoSalvo = parseInt(localStorage.getItem('startTime'));
-//     if (!tempoSalvo) return;
-
-//     let agora = new Date();
-//     let diferenca = agora - startTime;
-
-//     let segundosTotais = Math.floor(diferenca / 1000);
-//     let minutos = Math.floor(segundosTotais / 60);
-//     let segundos = segundosTotais % 60;
-
-//     let tempoFormatado =
-//         (minutos < 10 ? '0' + minutos : minutos) + ':' +
-//         (segundos < 10 ? '0' + segundos : segundos);
-
-//     document.getElementById(idDoRelogio).innerText = tempoFormatado;
-// }
-
-// function iniciarContador(idDoRelogio, btnIniciar1, btnParar1) {
-
-
-//     startTime = new Date();
-//     localStorage.setItem('startTime', startTime.getTime());
-//     localStorage.setItem('isRunning', 'true');
-//     isContando = true;
-
-//     atualizarRelogio(idDoRelogio);
-//     intervalo = setInterval(() => atualizarRelogio(idDoRelogio), 1000);
-
-//     document.getElementById(btnIniciar1).style.display = 'none';
-//     document.getElementById(btnParar1).style.display = 'block';
-
-// }
-
-// function pararContador(btnIniciar1, btnParar1) {
-
-
-//     clearInterval(intervalo);
-//     localStorage.setItem('isRunning', 'false');
-//     isContando = false;
-
-//     document.getElementById(btnIniciar1).style.display = 'block';
-//     document.getElementById(btnParar1).style.display = 'none';
-// }
-
-// window.onload = function () {
-
-
-//     const tempoSalvo = localStorage.getItem('startTime');
-//     const rodando = localStorage.getItem('isRunning') === 'true';
-
-//     if (tempoSalvo) {
-//         startTime = new Date(parseInt(tempoSalvo));
-
-//         atualizarRelogio('idDoRelogio');
-
-//         if (rodando) {
-//             intervalo = setInterval(() => atualizarRelogio('idDoRelogio'), 1000);
-//             document.getElementById('btnIniciar1').style.display = 'none';
-//             document.getElementById('btnParar1').style.display = 'block';
-//         } else {
-//             document.getElementById('btnIniciar1').style.display = 'block';
-//             document.getElementById('btnParar1').style.display = 'none';
-//         }
-//     } else {
-//         document.getElementById('idDoRelogio').innerText = '00:00';
-//         document.getElementById('btnIniciar1').style.display = 'block';
-//         document.getElementById('btnParar1').style.display = 'none';
-//     }
-// };
 
 const contadores = {}; // { [id]: { segundos, intervalo } }
 
+// ------------------ RELÓGIO ------------------
 function formatarTempo(segundos) {
     const h = Math.floor(segundos / 3600).toString().padStart(2, '0');
     const m = Math.floor((segundos % 3600) / 60).toString().padStart(2, '0');
@@ -130,12 +57,12 @@ function ligarUI(id, rodando) {
     document.getElementById(`btnParar_${id}`).style.display = rodando ? 'inline-block' : 'none';
 }
 
+// ------------------ CONTADOR ------------------
 async function iniciarContador(id) {
-
-    const resp = await fetch('iniciar.php', {
+    const resp = await fetch('contador.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: `id_maquina=${id}`
+        body: `acao=iniciar&id_maquina=${id}`
     });
     const data = await resp.json();
 
@@ -148,12 +75,13 @@ async function iniciarContador(id) {
     ligarUI(id, true);
 }
 
-async function pausarContador(id) {
+async function pararContador(id) {
     if (!contadores[id]) return;
-    await fetch('pausar.php', {
+
+    await fetch('contador.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: `id_maquina=${id}&total_segundos=${contadores[id].segundos}`
+        body: `acao=pausar&id_maquina=${id}&total_segundos=${contadores[id].segundos}`
     });
 
     if (contadores[id].intervalo) clearInterval(contadores[id].intervalo);
@@ -162,26 +90,55 @@ async function pausarContador(id) {
 }
 
 async function finalizarMaquina(id) {
-
-    const resp = await fetch('finalizar.php', {
+    const resp = await fetch('contador.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: `id_maquina=${id}&total_segundos=${contadores[id]?.segundos || 0}`
+        body: `acao=finalizar&id_maquina=${id}&total_segundos=${contadores[id]?.segundos || 0}`
     });
     const data = await resp.json();
 
-
     if (contadores[id]?.intervalo) clearInterval(contadores[id].intervalo);
     contadores[id] = { segundos: 0, intervalo: null };
+
     document.getElementById(`relogio_${id}`).innerText = '00:00:00';
     ligarUI(id, false);
-
 
     if (data?.status === 'ok' && data?.valor_total != null) {
         alert(`Tempo final: ${formatarTempo(data.total_segundos)}\nValor: R$ ${data.valor_total.toFixed(2)}`);
     }
 }
 
+// ------------------ SERVIÇOS ------------------
+async function adicionarServico(id, tipo) {
+    const resp = await fetch('servicos.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `acao=adicionar&id_maquina=${id}&tipo=${tipo}&quantidade=1`
+    });
+
+    const data = await resp.json();
+    if (data?.status === 'ok') {
+        document.getElementById(`${tipo}_${id}`).innerText = data[tipo];
+    }
+}
+async function salvarServicos(event, id) {
+    event.preventDefault();
+    const form = document.getElementById(`form_servicos_${id}`);
+    const formData = new FormData(form);
+
+    const resp = await fetch('servicos.php', {
+        method: 'POST',
+        body: new URLSearchParams(formData) + `&acao=salvar&id_maquina=${id}`
+    });
+
+    const data = await resp.json();
+    if (data?.status === 'ok') {
+        document.getElementById(`impressoes_${id}`).innerText = data.impressoes;
+        document.getElementById(`scanners_${id}`).innerText   = data.scanners;
+    }
+}
+
+// ------------------ INICIALIZAÇÃO ------------------
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.contador').forEach(box => {
         const id = parseInt(box.dataset.id, 10);

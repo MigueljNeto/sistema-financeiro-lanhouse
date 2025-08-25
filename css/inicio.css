@@ -36,7 +36,6 @@ body {
    padding: 10px;
    user-select: none;
    color: #cf3b00;
-   ;
 
 }
 .conteiner_principal{
@@ -45,7 +44,6 @@ body {
    display: flex;
    justify-content: center;
    align-items: center;
-   flex-direction: column;
    gap: 10px;
    background: rgb(240, 240, 240);
    width: 1530px;
@@ -53,6 +51,35 @@ body {
    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
    padding: 20px;
    transition: transform 0.3s ease;
+}
+
+canvas {
+   max-width: 600px;
+   height: 200px;
+   margin: 30px auto;
+   display: block;
+}
+
+.graficoFunc, .graficoPag {
+    background-color: #fff;
+    border-radius: 20px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    padding: 20px;
+    margin: 20px auto;
+    max-width: 700px;
+    transition: transform 0.3s;
+}
+
+.graficoFunc:hover, .graficoPag:hover {
+    transform: translateY(-5px);
+}
+
+.graficoFunc h2, .graficoPag h2 {
+    text-align: center;
+    color: #cf3b00;
+    margin-bottom: 20px;
+    font-family: 'Arial', sans-serif;
+    font-size: 1.5rem;
 }
 .conteiner_aba {
    display: flex;
@@ -214,7 +241,7 @@ select:focus {
    align-items: center;
    background: #f0f0f0;
    width: 320px;
-   height: 550px;
+   height: 660px;
    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
    padding: 20px;
    transition: transform 0.3s ease, opacity 0.3s ease, background-color 0.3s ease;
@@ -231,7 +258,7 @@ select:focus {
 
 .add button {
    width: 320px;
-   height: 550px;
+   height: 660px;
    font-size: 80px;
    font-weight: bold;
    color: #333;
@@ -278,11 +305,26 @@ select:focus {
    flex-direction: column;
    background: rgb(240, 240, 240);
    width: 320px;
-   height: 550px;
+   height: 660px;
    gap: 4px;
    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
    padding: 20px;
    transition: transform 0.3s ease;
+}
+
+.resumo-servicos {
+   display: flex; 
+   background: #f8f9fa;
+   gap: 5px;
+   border-radius: 8px;
+   padding: 10px;
+   margin-top: 10px;
+}
+
+.resumo-servicos p {
+    margin: 5px 0;
+    font-size: 14px;
+    color: black;
 }
 
 .contador:hover {
@@ -346,3 +388,4 @@ select:focus {
    ;
    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
+
