@@ -60,7 +60,7 @@ canvas {
    display: block;
 }
 
-.graficoFunc, .graficoPag {
+.graficoFunc, .graficoPag, .graficoSald {
     background-color: #fff;
     border-radius: 20px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
@@ -70,11 +70,11 @@ canvas {
     transition: transform 0.3s;
 }
 
-.graficoFunc:hover, .graficoPag:hover {
+.graficoFunc:hover, .graficoPag:hover, .graficoSald:hover {
     transform: translateY(-5px);
 }
 
-.graficoFunc h2, .graficoPag h2 {
+.graficoFunc h2, .graficoPag h2, .graficoSald h2 {
     text-align: center;
     color: #cf3b00;
     margin-bottom: 20px;
@@ -376,12 +376,13 @@ select:focus {
    border: 2px solid black;
    border-radius: 20px;
    width: 200px;
-   height: 100px;
+   height: 200px;
    padding: 10px;
    margin-bottom: 20px;
    display: flex;
    justify-content: center;
    align-items: center;
+   flex-direction: column;
    font-size: 1.2rem;
    font-weight: bold;
    color: #cf3b00;

@@ -55,23 +55,21 @@
     }
 
     $hoje = date('Y-m-d');
-
-    // Soma depósitos do dia
+    
     $sqlDeposito = "SELECT IFNULL(SUM(valor), 0) AS totalDeposito 
                     FROM deposito 
                     WHERE DATE(data) = '$hoje'";
     $resDep = $conn->query($sqlDeposito);
     $deposito = $resDep->fetch_assoc()['totalDeposito'];
 
-    // Soma pagamentos do dia
     $sqlPagamento = "SELECT IFNULL(SUM(valor), 0) AS totalPagamento 
                     FROM pagamento 
                     WHERE DATE(data_hora) = '$hoje'";
     $resPag = $conn->query($sqlPagamento);
     $pagamento = $resPag->fetch_assoc()['totalPagamento'];
 
-    // Saldo disponível no dia
     $saldoDia = $deposito - $pagamento;
+
 ?>
 
 <!DOCTYPE html>
@@ -82,8 +80,9 @@
     <title>Pagina Inicial</title>
     <link rel="stylesheet" href="../css/inicio.css">
     <link rel="stylesheet" href="../css/modal.css">
-    <script src="inicio.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="inicio.js"></script>
+    
 </head>
 
 <body>
@@ -102,21 +101,24 @@
             </h2>
         </div>
     </div>
+    
     <div class="conteiner_principal">
         <div class="graficoFunc">
             <h2>Total por Funcionário</h2>
             <canvas id="graficoFuncionario"></canvas>
         </div>
+        
+        <div class="graficoSald">
+            <div>
+                <h2>Saldo disponível hoje: <br>R$ <?php echo number_format($saldoDia, 2, ',', '.'); ?></h2>
+            </div>
+            <canvas id="graficoDia"></canvas>
+        </div>    
+        
         <div class="graficoPag">
             <h2>Total por Forma de Pagamento</h2>
             <canvas id="graficoPagamento"></canvas>
         </div>
-        <div class="graficoSald">
-            <div>
-                <h2>Saldo disponível hoje: R$ <?php echo number_format($saldoDia, 2, ',', '.'); ?></h2>
-            </div>
-            <canvas id="graficoDia"></canvas>
-        </div>    
 
     </div>
 
@@ -201,13 +203,30 @@
                     datasets: [{
                         label: 'Valores do dia',
                         data: [<?php echo $deposito; ?>, <?php echo $pagamento; ?>, <?php echo $saldoDia; ?>],
-                        backgroundColor: ['green','red','blue']
+                        backgroundColor: [
+                            'rgba(46, 204, 113, 0.85)',   // verde elegante
+                            'rgba(231, 76, 60, 0.85)',    // vermelho elegante
+                            'rgba(52, 152, 219, 0.85)'    // azul elegante
+                        ],
+                        borderColor: '#fff',
+                        borderWidth: 2,
+                        borderRadius: 6
                     }]
                 },
                 options: {
                     responsive: true,
-                    scales: {
-                        y: { beginAtZero: true }
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: { size: 14 },
+                                color: '#333' 
+                        },
+                        tooltip: { 
+                            callbacks: {
+                                label: ctx => `R$ ${ctx.raw.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`
+                            }
+                        }
                     }
                 }
             });
