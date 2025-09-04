@@ -28,7 +28,7 @@ function fecharModalMaquina(id) {
 
 function abrirModalExcluir(id) {
     document.getElementById("idExcluir").value = id;
-    const modal = document.getElementById("modalExcluir");
+    const modal = document.getElementById("modalExcluir");  
     modal.style.display = "flex";
 }
 
@@ -106,11 +106,25 @@ async function finalizarMaquina(id) {
     if (data?.status === 'ok' && data?.valor_total != null) {
         alert(`Tempo final: ${formatarTempo(data.total_segundos)}\nValor: R$ ${data.valor_total.toFixed(2)}`);
     }
+    if (data?.status === 'ok') {
+        let valorServicos = 0;
+        if (data.impressoes) valorServicos += data.impressoes * 1.00;
+        if (data.scanners) valorServicos += (data.scanners * 1.00) + 5.00;
+
+        const total = data.valor_total + valorServicos;
+
+        alert(
+            `Tempo final: ${formatarTempo(data.total_segundos)}\n` +
+            `Impressões: ${data.impressoes} (R$ ${(data.impressoes * 1).toFixed(2)})\n` +
+            `Scanners: ${data.scanners} (R$ ${(data.scanners * 1 + 5).toFixed(2)})\n` +
+            `\nTOTAL: R$ ${total.toFixed(2)}`
+        );
+    }
 }
 
 // ------------------ SERVIÇOS ------------------
 async function adicionarServico(id, tipo) {
-    const resp = await fetch('servicos.php', {
+    const resp = await fetch('servmaq.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: `acao=adicionar&id_maquina=${id}&tipo=${tipo}&quantidade=1`
@@ -121,12 +135,27 @@ async function adicionarServico(id, tipo) {
         document.getElementById(`${tipo}_${id}`).innerText = data[tipo];
     }
 }
+
+async function removerServico(id, tipo) {
+
+    const resp = await fetch('servmaq.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `acao=remover&id_maquina=${id}&tipo=${tipo}&quantidade=1`
+    });
+
+    const data = await resp.json();
+    if (data?.status === 'ok') {
+        document.getElementById(`${tipo}_${id}`).innerText = data[tipo];
+    }
+}
+
 async function salvarServicos(event, id) {
     event.preventDefault();
     const form = document.getElementById(`form_servicos_${id}`);
     const formData = new FormData(form);
 
-    const resp = await fetch('servicos.php', {
+    const resp = await fetch('servmaq.php', {
         method: 'POST',
         body: new URLSearchParams(formData) + `&acao=salvar&id_maquina=${id}`
     });
@@ -134,7 +163,7 @@ async function salvarServicos(event, id) {
     const data = await resp.json();
     if (data?.status === 'ok') {
         document.getElementById(`impressoes_${id}`).innerText = data.impressoes;
-        document.getElementById(`scanners_${id}`).innerText   = data.scanners;
+        document.getElementById(`scanners_${id}`).innerText = data.scanners;
     }
 }
 
@@ -154,5 +183,18 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             ligarUI(id, false);
         }
+    });
+});
+
+window.addEventListener('DOMContentLoaded', () => {
+    const barras = document.querySelectorAll('.preenchimento');
+
+    barras.forEach(barra => {
+        const valor = parseFloat(barra.getAttribute('data-valor'));
+        const meta = parseFloat(barra.getAttribute('data-meta'));
+        const percentual = Math.min((valor / meta) * 100, 100); // evita passar de 100%
+
+        barra.style.width = percentual + '%';
+        barra.querySelector('.percentual').textContent = Math.round(percentual) + '%';
     });
 });

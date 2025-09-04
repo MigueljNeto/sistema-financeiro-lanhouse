@@ -2,73 +2,131 @@
     require_once __DIR__ . '/../includes/verifica_sessao.php';
     require_once "../includes/servidor.php";
 
-    //Somando os Valores do Deposito
-    $sql = "SELECT SUM(valor) AS total FROM deposito";
+   $hoje = date('Y-m-d');
+
+    // 🔹 Somando os Valores do Depósito (do dia)
+    $sql = "SELECT SUM(valor) AS total 
+            FROM deposito 
+            WHERE DATE(data) = '$hoje'";
     $resultado = $conn->query($sql);
 
     $totalDeposito = 0.00;
-
     if ($resultado && $linha = $resultado->fetch_assoc()) {
         $totalDeposito = $linha['total'] ?? 0.00;
     }
 
-    //Somando os Valores dos Pagamentos    
-    $result = $conn->query("SELECT SUM(valor) AS total_pago FROM pagamento");
+    // 🔹 Somando os Valores dos Pagamentos (do dia)
+    $sql = "SELECT SUM(valor) AS total_pago 
+            FROM pagamento 
+            WHERE DATE(data_hora) = '$hoje'";
+    $result = $conn->query($sql);
 
-    $total_pago = 0;
+    $total_pago = 0.00;
     if($result){
         $row = $result->fetch_assoc();
-        $total_pago = $row['total_pago'] ?? 0;
+        $total_pago = $row['total_pago'] ?? 0.00;
     }
 
-    //Somando os Valores dos Serviços
-    $sql = "SELECT SUM(valor) as total FROM servicos";
+    // 🔹 Somando os Valores dos Serviços (do dia)
+    $sql = "SELECT SUM(valor) as total 
+            FROM servicos 
+            WHERE DATE(data) = '$hoje'";
     $result = $conn->query($sql);
 
     $total = 0.00;
+    if ($result && $row = $result->fetch_assoc()) {
+        $total = $row['total'] ?? 0.00;
+    }
 
+    
+    //Buscando os Valores pra inserir nos graficos
+    $mesAtual = date('m');
+    $anoAtual = date('Y');
+
+    // 🔹 Somando os Valores do Depósito (mês)
+    $sql = "SELECT SUM(valor) AS total FROM deposito 
+            WHERE MONTH(data) = '$mesAtual' AND YEAR(data) = '$anoAtual'";
+    $resultado = $conn->query($sql);
+
+    $deposito = 0.00;
+    if ($resultado && $linha = $resultado->fetch_assoc()) {
+        $deposito = $linha['total'] ?? 0.00;
+    }
+
+    // 🔹 Somando os Valores dos Pagamentos (mês)
+    $result = $conn->query("SELECT SUM(valor) AS total_pago FROM pagamento 
+                            WHERE MONTH(data_hora) = '$mesAtual' AND YEAR(data_hora) = '$anoAtual'");
+    $pagamento = 0.00;
+    if($result){
+        $row = $result->fetch_assoc();
+        $pagamento = $row['total_pago'] ?? 0.00;
+    }
+    $mesAnoAtual = date('Y-m'); // Exemplo: "2025-09"
+
+    // Serviços do mês (lucro real)
+    $sqlServicosMes = "SELECT IFNULL(SUM(valor), 0) AS totalServicosMes 
+                    FROM servicos 
+                    WHERE DATE_FORMAT(data, '%Y-%m') = '$mesAnoAtual'";
+    $resServMes = $conn->query($sqlServicosMes);
+    $servicosMes = $resServMes->fetch_assoc()['totalServicosMes'];
+
+    // Lucro atual (sem considerar despesas da lan house)
+    $lucro = $servicosMes;
+
+    // 🔹 Valores dos Serviços (mês)
+    $sql = "SELECT SUM(valor) as total FROM servicos 
+            WHERE MONTH(data) = '$mesAtual' AND YEAR(data) = '$anoAtual'";
+    $result = $conn->query($sql);
+
+    $total = 0.00;
     if ($result && $row = $result->fetch_assoc()) {
         $total = $row['total'] ?? 0;
     }
 
-    //Buscando os Valores pra inserir nos graficos
-    $sqlFunc = "SELECT usuario, SUM(valor) as total FROM servicos GROUP BY usuario";
+    // 🔹 Buscando valores para gráficos (mês)
+    $sqlFunc = "SELECT usuario, SUM(valor) as total 
+                FROM servicos 
+                WHERE MONTH(data) = '$mesAtual' AND YEAR(data) = '$anoAtual'
+                GROUP BY usuario";
     $resFunc = $conn->query($sqlFunc);
 
     $usuario = [];
     $valoresUsuarios = [];
-
     while ($row = $resFunc -> fetch_assoc()){
         $usuario[] = $row['usuario'];
         $valoresUsuarios[] = $row['total'];
     }
 
-    $sqlPag = "SELECT tipo_pagamento, SUM(valor) as total FROM servicos GROUP BY tipo_pagamento";
+    $sqlPag = "SELECT tipo_pagamento, SUM(valor) as total 
+               FROM servicos 
+               WHERE MONTH(data) = '$mesAtual' AND YEAR(data) = '$anoAtual'
+               GROUP BY tipo_pagamento";
     $resPag = $conn->query($sqlPag);
 
     $formas = [];
     $valoresPag = [];
-
     while ($row = $resPag -> fetch_assoc()){
         $formas[] = $row['tipo_pagamento'];
         $valoresPag[] = $row['total'];
     }
+    // Meta do mês (exemplo, você pode ajustar)
+    $metaMes = 5000.00;
 
-    $hoje = date('Y-m-d');
-    
-    $sqlDeposito = "SELECT IFNULL(SUM(valor), 0) AS totalDeposito 
-                    FROM deposito 
-                    WHERE DATE(data) = '$hoje'";
-    $resDep = $conn->query($sqlDeposito);
-    $deposito = $resDep->fetch_assoc()['totalDeposito'];
+    // Total de serviços do mês (lucro real)
+    $sqlServicos = "SELECT SUM(valor) AS total 
+    FROM servicos
+    WHERE DATE(data) = '$hoje'";
+    $resultadoServicos = $conn->query($sqlServicos);
 
-    $sqlPagamento = "SELECT IFNULL(SUM(valor), 0) AS totalPagamento 
-                    FROM pagamento 
-                    WHERE DATE(data_hora) = '$hoje'";
-    $resPag = $conn->query($sqlPagamento);
-    $pagamento = $resPag->fetch_assoc()['totalPagamento'];
+    $totalServicos = 0.00;
+    if ($resultadoServicos && $linhaServicos = $resultadoServicos->fetch_assoc()) {
+        $totalServicos = $linhaServicos['total'] ?? 0.00;
+    }
 
-    $saldoDia = $deposito - $pagamento;
+    $percentLucro = ($lucro > 0 && $metaMes > 0) ? round(($lucro / $metaMes) * 100) : 0;
+    $percentDeposito = ($deposito > 0 && $metaMes > 0) ? round(($deposito / $metaMes) * 100) : 0;
+    $percentPagamento = ($pagamento > 0 && $metaMes > 0) ? round(($pagamento / $metaMes) * 100) : 0;
+    $percentServicos = ($totalServicos > 0 && $metaMes > 0) ? round(($totalServicos / $metaMes) * 100) : 0;
 
 ?>
 
@@ -82,7 +140,7 @@
     <link rel="stylesheet" href="../css/modal.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="inicio.js"></script>
-    
+
 </head>
 
 <body>
@@ -101,147 +159,153 @@
             </h2>
         </div>
     </div>
-    
-    <div class="conteiner_principal">
-        <div class="graficoFunc">
-            <h2>Total por Funcionário</h2>
+    <div class="dashboard">
+
+        <!-- 🔹 Indicadores rápidos -->
+        <div class="indicadores-rapidos">
+            <div class="indicador">
+                <h3>💻 Máquinas Ativas</h3>
+                <p><?= $maquinasAtivas ?? 0 ?></p>
+            </div>
+            <div class="indicador">
+                <h3>📊 Serviços Hoje</h3>
+                <p>R$ <?php echo number_format($totalServicos, 2, ',', '.'); ?></p>
+            </div>
+            <div class="indicador">
+                <h3>🎯 Meta do Mês</h3>
+                <p>R$ <?= number_format($metaMes,2,',','.') ?></p>
+            </div>
+        </div>
+
+        <!-- 🔹 Cards com progresso -->
+        <div class="cards-resumo">
+            <div class="card">
+                <h3>📊 Lucro da Lan House (Mês)</h3>
+                <p>R$ <?= number_format($lucro,2,',','.') ?></p>
+                <div class="barra-container">
+                    <div class="preenchimento lucro" style="width: <?= $percentLucro ?>%">
+                        <span class="percentual"><?= $percentLucro ?>%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>📈 Depósitos (Mês)</h3>
+                <p>R$ <?= number_format($deposito,2,',','.') ?></p>
+                <div class="barra-container">
+                    <div class="preenchimento deposito" style="width: <?= $percentDeposito ?>%">
+                        <span class="percentual"><?= $percentDeposito ?>%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>📉 Pagamentos (Mês)</h3>
+                <p>R$ <?= number_format($pagamento,2,',','.') ?></p>
+                <div class="barra-container">
+                    <div class="preenchimento pagamento" style="width: <?= $percentPagamento ?>%">
+                        <span class="percentual"><?= $percentPagamento ?>%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>🛠 Serviços (Mês)</h3>
+                <p>R$ <?= number_format($totalServicos,2,',','.') ?></p>
+                <div class="barra-container">
+                    <div class="preenchimento servico" style="width: <?= $percentServicos ?>%">
+                        <span class="percentual"><?= $percentServicos ?>%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 🔹 Gráficos -->
+        <div class="grafico">
+            <h2>Total por Funcionário (Mês)</h2>
             <canvas id="graficoFuncionario"></canvas>
         </div>
-        
-        <div class="graficoSald">
-            <div>
-                <h2>Saldo disponível hoje: <br>R$ <?php echo number_format($saldoDia, 2, ',', '.'); ?></h2>
-            </div>
-            <canvas id="graficoDia"></canvas>
-        </div>    
-        
-        <div class="graficoPag">
-            <h2>Total por Forma de Pagamento</h2>
+
+        <div class="grafico">
+            <h2>Total por Forma de Pagamento (Mês)</h2>
             <canvas id="graficoPagamento"></canvas>
         </div>
 
     </div>
 
     <script>
-
-        const ctxFunc = document.getElementById('graficoFuncionario').getContext('2d');
-        new Chart(ctxFunc, {
-            type: 'bar',
-            data: {
-                labels: <?= json_encode($usuario) ?>,
-                datasets: [{
-                    label: 'Total (R$)',
-                    data: <?= json_encode($valoresUsuarios) ?>,
-                    backgroundColor: [
-                        'rgba(255, 99, 132, 0.6)',  // vermelho
-                        'rgba(54, 162, 235, 0.6)',  // azul
-                        'rgba(255, 206, 86, 0.6)'   // amarelo
-                    ],
-                    borderColor: [
-                        'rgba(255, 99, 132, 1)',
-                        'rgba(54, 162, 235, 1)',
-                        'rgba(255, 206, 86, 1)'
-                    ],
-                    borderWidth: 1,
-                    borderRadius: 8 // borda arredondada das barras
-                }]
+    new Chart(document.getElementById('graficoFuncionario'), {
+        type: 'bar',
+        data: {
+            labels: <?= json_encode($usuario) ?>,
+            datasets: [{
+                label: 'Total (R$)',
+                data: <?= json_encode($valoresUsuarios) ?>,
+                backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1,
+                borderRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false
+                }
             },
-            options: {
-                responsive: true,
-                plugins: { 
-                    legend: { display: false },
-                    tooltip: { 
-                        callbacks: {
-                            label: ctx => `R$ ${ctx.raw.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`
-                        }
-                    }
-                },
-                scales: {
-                    y: { beginAtZero: true }
+            scales: {
+                y: {
+                    beginAtZero: true
                 }
             }
-        });
+        }
+    });
 
-            const ctxPag = document.getElementById('graficoPagamento').getContext('2d');
-            new Chart(ctxPag, {
-                type: 'pie',
-                data: {
-                    labels: <?= json_encode($formas) ?>,
-                    datasets: [{
-                        data: <?= json_encode($valoresPag) ?>,
-                        backgroundColor: [
-                            'rgba(75, 192, 192, 0.6)',  // verde água
-                            'rgba(255, 159, 64, 0.6)',  // laranja
-                            'rgba(255, 99, 132, 0.6)',  // vermelho (se houver mais)
-                            'rgba(54, 162, 235, 0.6)'   // azul (se houver mais)
-                        ],
-                        borderColor: '#fff',
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: { font: { size: 14 } }
-                        },
-                        tooltip: { 
-                            callbacks: {
-                                label: ctx => `R$ ${ctx.raw.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`
-                            }
-                        }
-                    }
+    new Chart(document.getElementById('graficoPagamento'), {
+        type: 'bar',
+        data: {
+            labels: <?= json_encode($formas) ?>,
+            datasets: [{
+                label: 'Total (R$)',
+                data: <?= json_encode($valoresPag) ?>,
+                backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1,
+                borderRadius: 6
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false
                 }
-            });
-
-            const ctx = document.getElementById('graficoDia').getContext('2d');
-            new Chart(ctx, {
-                type: 'pie',
-                data: {
-                    labels: ['Depósitos', 'Pagamentos', 'Saldo'],
-                    datasets: [{
-                        label: 'Valores do dia',
-                        data: [<?php echo $deposito; ?>, <?php echo $pagamento; ?>, <?php echo $saldoDia; ?>],
-                        backgroundColor: [
-                            'rgba(46, 204, 113, 0.85)',   // verde elegante
-                            'rgba(231, 76, 60, 0.85)',    // vermelho elegante
-                            'rgba(52, 152, 219, 0.85)'    // azul elegante
-                        ],
-                        borderColor: '#fff',
-                        borderWidth: 2,
-                        borderRadius: 6
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                font: { size: 14 },
-                                color: '#333' 
-                        },
-                        tooltip: { 
-                            callbacks: {
-                                label: ctx => `R$ ${ctx.raw.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`
-                            }
-                        }
-                    }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true
                 }
-            });
+            }
+        }
+    });
     </script>
 
     <div class="conteiner_aba">
         <div class="abas">
+            <div class="barra-container">
+                <div class="preenchimento deposito" data-meta="10000" data-valor="<?php echo $totalDeposito; ?>">
+                    <span class="percentual"></span>
+                </div>
+            </div>
             <h1>
                 DEPOSITO
             </h1>
             <div class="valor">
-                <h1>
-                    R$: <?php echo number_format($totalDeposito, 2, ',', '.'); ?>
-                </h1>
+                <h1>R$: <?php echo number_format($totalDeposito, 2, ',', '.'); ?></h1>
             </div>
+
             <div>
                 <button onclick="abrirModal('modal-deposito')">REGISTRAR DEPOSITO</button>
             </div>
@@ -250,7 +314,13 @@
             </div>
         </div>
 
+
         <div class="abas">
+            <div class="barra-container">
+                <div class="preenchimento pagamento" data-meta="10000" data-valor="<?php echo $total_pago; ?>">
+                    <span class="percentual"></span>
+                </div>
+            </div>
             <h1>
                 CONTAS PAGAS
             </h1>
@@ -266,6 +336,11 @@
         </div>
 
         <div class="abas">
+            <div class="barra-container">
+                <div class="preenchimento servico" data-meta="2000" data-valor="<?php echo $total; ?>">
+                    <span class="percentual"></span>
+                </div>
+            </div>
             <h1>
                 SERVIÇOS
             </h1>
@@ -298,7 +373,7 @@
     <div id="modal-pagamento" class="fundo-modal">
         <div class="caixa-modal">
             <button class="botao-fechar" onclick="fecharModal('modal-pagamento')">X</button>
-            <h2>Registrar Depósito</h2>
+            <h2>Registrar Pagamento</h2>
             <form action="pagamento.php" method="post">
                 <select name="tipos" id="tipos">
                     <option value="">FORMA DE PAGAMENTO</option>
@@ -318,13 +393,13 @@
     <div id="modal-servico" class="fundo-modal">
         <div class="caixa-modal">
             <button class="botao-fechar" onclick="fecharModal('modal-servico')">X</button>
-            <h2>Registrar Depósito</h2>
+            <h2>Registrar Serviço</h2>
             <form action="servico.php" method="post">
                 <select name="usuarios" id="usuarios">
                     <option value="">Funcionario</option>
-                    <option value="miguel">Miguel</option>
-                    <option value="romulo">Romulo</option>
-                    <option value="bobgudes">Bobbie Goods</option>
+                    <option value="Miguel">Miguel</option>
+                    <option value="Romulo">Romulo</option>
+                    <option value="Bobbie Goods">Bobbie Goods</option>
                 </select>
                 <select name="formas" id="formas">
                     <option value="">Forma de Pagamento</option>
@@ -388,16 +463,17 @@
                             <h1 id="relogio_' . $maquina['id'] . '">00:00:00</h1>
                         </div>
                         
-                        <!-- Resumo dos serviços -->
                         <div class="resumo-servicos">
                             <p>Impressões: <span id="impressoes_'.$id.'">'.$impressoes.'</span></p>
                             <p>Scanners: <span id="scanners_'.$id.'">'.$scanners.'</span></p>
                         </div>
 
-                         <!-- Atalhos rápidos -->
                         <div class="atalhos-servicos">
                             <button onclick="adicionarServico('.$id.', \'impressoes\')">+ Impressão</button>
+                            <button onclick="removerServico('.$id.', \'impressoes\')">- Impressão</button>
+
                             <button onclick="adicionarServico('.$id.', \'scanners\')">+ Scanner</button>
+                            <button onclick="removerServico('.$id.', \'scanners\')">- Scanner</button>
                         </div>
 
                         <div>

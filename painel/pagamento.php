@@ -8,7 +8,7 @@
 
     $valorBruto = $_POST['valor'];
     $observacao = $_POST['observacao'];
-    $tipo = $_POST['tipos']; // tipo de pagamento
+    $tipo = $_POST['tipos']; 
     $data = date('Y-m-d H:i:s');
 
     $valor = str_replace(',', '.', $valorBruto);

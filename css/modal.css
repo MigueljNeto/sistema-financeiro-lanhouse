@@ -95,34 +95,40 @@
 }
 
 .modalMaq {
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    text-align: center;
-    max-width: 300px;
-    width: 100%;
+   position: relative; 
+   background: #fff;
+   padding: 20px;
+   border-radius: 12px;
+   text-align: center;
+   max-width: 320px;
+   width: 100%;
+   box-shadow: 0 6px 20px rgba(0,0,0,0.15);
 } 
+
 .modalMaq form {
    display: flex;
    flex-direction: column;
-   gap: 5px;
+   gap: 8px;
+}
+
+.modalMaq form label {
+    font-weight: bold;
+    font-size: 14px;
+    color: #333;
 }
 
 .modalMaq form input {
-   border: none;
+   border: 1px solid #ccc;
    text-align: center;
-   border-radius: 30px;
-   background-color: #fff;
-   padding: 10px;
-   box-shadow: 0 0 8px rgba(207, 59, 0, 0.2);
+   border-radius: 25px;
+   background-color: #fafafa;
+   padding: 8px 12px;
+   font-size: 14px;
+   transition: all 0.2s ease;
 }
 
 .modalMaq form input:focus {
    outline: none;
-   box-shadow: 0 0 12px #cf3b00;
-}
-
-.modalMaq form input:focus {
-   outline: none;
-   box-shadow: 0 0 12px #cf3b00;
+   border-color: #cf3b00;
+   box-shadow: 0 0 8px rgba(207, 59, 0, 0.3);
 }

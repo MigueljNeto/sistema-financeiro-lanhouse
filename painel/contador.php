@@ -80,56 +80,73 @@ switch ($acao) {
         break;
 
     // ─────────────── FINALIZAR ───────────────
-    case 'finalizar':
-        $res = mysqli_query($conn, "SELECT inicio FROM maquinas WHERE id=$id AND status='ocupada'");
-        $maq = mysqli_fetch_assoc($res);
+   case 'finalizar':
+    // --- Buscar início da sessão ---
+    $res = mysqli_query($conn, "SELECT inicio FROM maquinas WHERE id=$id AND status='ocupada'");
+    $maq = mysqli_fetch_assoc($res);
 
-        if (!$maq || !$maq['inicio']) {
-            echo json_encode(['status'=>'erro','msg'=>'sem sessão ativa']);
-            exit;
-        }
+    if (!$maq || !$maq['inicio']) {
+        echo json_encode(['status'=>'erro','msg'=>'sem sessão ativa']);
+        exit;
+    }
 
-        $inicioSessao = $maq['inicio'];
+    $inicioSessao = $maq['inicio'];
 
-        $stmt = mysqli_prepare($conn, "SELECT COALESCE(SUM(tempo_segundos),0) FROM tempo_uso WHERE maquina_id=? AND inicio >= ?");
-        mysqli_stmt_bind_param($stmt, "is", $id, $inicioSessao);
-        mysqli_stmt_execute($stmt);
-        mysqli_stmt_bind_result($stmt, $jaSalvo);
-        mysqli_stmt_fetch($stmt);
-        mysqli_stmt_close($stmt);
+    // --- Calcular tempo já salvo ---
+    $stmt = mysqli_prepare($conn, "SELECT COALESCE(SUM(tempo_segundos),0) FROM tempo_uso WHERE maquina_id=? AND inicio >= ?");
+    mysqli_stmt_bind_param($stmt, "is", $id, $inicioSessao);
+    mysqli_stmt_execute($stmt);
+    mysqli_stmt_bind_result($stmt, $jaSalvo);
+    mysqli_stmt_fetch($stmt);
+    mysqli_stmt_close($stmt);
 
-        $delta = max(0, $totalAtual - (int)$jaSalvo);
+    $delta = max(0, $totalAtual - (int)$jaSalvo);
 
-        if ($delta > 0) {
-            $fim = date('Y-m-d H:i:s');
-            $inicioSegmento = date('Y-m-d H:i:s', time() - $delta);
+    if ($delta > 0) {
+        $fim = date('Y-m-d H:i:s');
+        $inicioSegmento = date('Y-m-d H:i:s', time() - $delta);
 
-            $stmt2 = mysqli_prepare($conn, "INSERT INTO tempo_uso (maquina_id, inicio, fim, tempo_segundos) VALUES (?, ?, ?, ?)");
-            mysqli_stmt_bind_param($stmt2, "issi", $id, $inicioSegmento, $fim, $delta);
-            mysqli_stmt_execute($stmt2);
-            mysqli_stmt_close($stmt2);
-        }
+        $stmt2 = mysqli_prepare($conn, "INSERT INTO tempo_uso (maquina_id, inicio, fim, tempo_segundos) VALUES (?, ?, ?, ?)");
+        mysqli_stmt_bind_param($stmt2, "issi", $id, $inicioSegmento, $fim, $delta);
+        mysqli_stmt_execute($stmt2);
+        mysqli_stmt_close($stmt2);
+    }
 
-        $stmt3 = mysqli_prepare($conn, "SELECT COALESCE(SUM(tempo_segundos),0) FROM tempo_uso WHERE maquina_id=? AND inicio >= ?");
-        mysqli_stmt_bind_param($stmt3, "is", $id, $inicioSessao);
-        mysqli_stmt_execute($stmt3);
-        mysqli_stmt_bind_result($stmt3, $totalFinal);
-        mysqli_stmt_fetch($stmt3);
-        mysqli_stmt_close($stmt3);
+    // --- Total final de tempo ---
+    $stmt3 = mysqli_prepare($conn, "SELECT COALESCE(SUM(tempo_segundos),0) FROM tempo_uso WHERE maquina_id=? AND inicio >= ?");
+    mysqli_stmt_bind_param($stmt3, "is", $id, $inicioSessao);
+    mysqli_stmt_execute($stmt3);
+    mysqli_stmt_bind_result($stmt3, $totalFinal);
+    mysqli_stmt_fetch($stmt3);
+    mysqli_stmt_close($stmt3);
 
-        mysqli_query($conn, "UPDATE maquinas SET status='livre', inicio=NULL WHERE id=$id");
+    // --- Buscar serviços ---
+    $serv = $conn->query("SELECT impressoes, scanners FROM servmaq WHERE id_maquina = $id");
+    $imp = 0;
+    $scn = 0;
+    if ($serv && $row = $serv->fetch_assoc()) {
+        $imp = (int)$row['impressoes'];
+        $scn = (int)$row['scanners'];
+    }
 
-        $meiasHoras = (int)ceil($totalFinal / 1800);
-        $valorTempo = $meiasHoras * 2.50;
+    // --- Calcular valores ---
+    $meiasHoras = (int)ceil($totalFinal / 1800);
+    $valorTempo = $meiasHoras * 2.50;
+    $valorImpressoes = $imp * 1.00;
+    $valorScanners = $scn > 0 ? 5.00 + ($scn * 1.00) : 0;
+    $valorTotal = $valorTempo + $valorImpressoes + $valorScanners;
 
-        echo json_encode([
-            'status' => 'ok',
-            'total_segundos' => (int)$totalFinal,
-            'valor_total' => $valorTempo
-        ]);
-        break;
+    // --- Resetar máquina e serviços ---
+    mysqli_query($conn, "UPDATE maquinas SET status='livre', inicio=NULL WHERE id=$id");
+    mysqli_query($conn, "UPDATE servmaq SET impressoes=0, scanners=0 WHERE id_maquina=$id");
 
-    default:
-        echo json_encode(['status' => 'erro', 'msg' => 'ação inválida']);
+    echo json_encode([
+        'status' => 'ok',
+        'total_segundos' => (int)$totalFinal,
+        'impressoes' => $imp,
+        'scanners' => $scn,
+        'valor_total' => $valorTotal
+    ]);
+    break;
 }
 ?>

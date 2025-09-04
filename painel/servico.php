@@ -29,5 +29,5 @@ require_once "../includes/servidor.php";
     }
 
     $conn->close();
-
+?>
  
