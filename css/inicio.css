@@ -5,39 +5,102 @@
 body {
    background: linear-gradient(135deg, #cccccc, #aaaaaa);
    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-
 }
 
-.nav {
-   display: flex;
-   justify-content: center;
-   align-items: center;
-   gap: 60%;
-   background: rgb(240, 240, 240);
-   border-radius: 30px;
-   padding: 10px 20px;
+.nav.full {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(90deg, #ffffff, #f1f3f5);
+    border-radius: 16px;
+    padding: 12px 24px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
-.nav h2 {
-   font-size: 20px;
-   background-color: white;
-   border-radius: 30px;
-   border: 2px solid black;
-   padding: 10px;
-   display: flex;
-   gap: 3px;
-   user-select: none;
+.nav.full h1 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0;
 }
 
-.nav h1 {
-   font-size: 20px;
-   border-radius: 30px;
-   padding: 10px;
-   user-select: none;
-   color: #333333;
-
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
 }
 
+.datetime {
+    font-size: 14px;
+    color: #555;
+    font-weight: 500;
+}
+
+.user-menu {
+    position: relative;
+    font-family: Arial, sans-serif;
+}
+
+.user-trigger {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    background: #fff;
+    border-radius: 30px;
+    border: 1px solid #e0e0e0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.user-trigger:hover {
+    background: #f8f9fa;
+    transform: scale(1.02);
+}
+
+.user-trigger .avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.user-trigger .arrow {
+    width: 12px;
+}
+
+.dropdown {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 48px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+    list-style: none;
+    padding: 10px 0;
+    margin: 0;
+    min-width: 160px;
+    animation: fadeIn 0.2s ease;
+}
+
+.user-menu:hover .dropdown {
+    display: block;
+}
+
+.dropdown li {
+    padding: 10px 16px;
+    transition: background 0.2s;
+}
+
+.dropdown li:hover {
+    background: #f1f3f5;
+}
+.dropdown li a{
+   text-decoration: none;
+   color: #555;
+}
 .dashboard {
    max-width: 1200px;
    border-radius: 30px;
@@ -48,7 +111,7 @@ body {
    display: flex;
    flex-direction: column;
    gap: 25px;
-   background: #f8f9fa;
+   background: linear-gradient(90deg, #f8f9fa, #e9ecef);
 }
 
 .indicadores-rapidos {
@@ -78,7 +141,6 @@ body {
    color: #333;
 }
 
-/* 🔹 Cards com progresso */
 .cards-resumo {
    display: flex;
    flex-wrap: wrap;
@@ -287,7 +349,6 @@ body {
 
 .abas a:hover {
    background-color: #217dbb;
-
 }
 
 button {

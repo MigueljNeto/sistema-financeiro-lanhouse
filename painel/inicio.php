@@ -1,10 +1,11 @@
 <?php
     require_once __DIR__ . '/../includes/verifica_sessao.php';
     require_once "../includes/servidor.php";
+    
+    date_default_timezone_set('America/Sao_Paulo');
 
-   $hoje = date('Y-m-d');
+    $hoje = date('Y-m-d');
 
-    // 🔹 Somando os Valores do Depósito (do dia)
     $sql = "SELECT SUM(valor) AS total 
             FROM deposito 
             WHERE DATE(data) = '$hoje'";
@@ -15,7 +16,6 @@
         $totalDeposito = $linha['total'] ?? 0.00;
     }
 
-    // 🔹 Somando os Valores dos Pagamentos (do dia)
     $sql = "SELECT SUM(valor) AS total_pago 
             FROM pagamento 
             WHERE DATE(data_hora) = '$hoje'";
@@ -27,7 +27,6 @@
         $total_pago = $row['total_pago'] ?? 0.00;
     }
 
-    // 🔹 Somando os Valores dos Serviços (do dia)
     $sql = "SELECT SUM(valor) as total 
             FROM servicos 
             WHERE DATE(data) = '$hoje'";
@@ -38,12 +37,9 @@
         $total = $row['total'] ?? 0.00;
     }
 
-    
-    //Buscando os Valores pra inserir nos graficos
     $mesAtual = date('m');
     $anoAtual = date('Y');
 
-    // 🔹 Somando os Valores do Depósito (mês)
     $sql = "SELECT SUM(valor) AS total FROM deposito 
             WHERE MONTH(data) = '$mesAtual' AND YEAR(data) = '$anoAtual'";
     $resultado = $conn->query($sql);
@@ -53,7 +49,6 @@
         $deposito = $linha['total'] ?? 0.00;
     }
 
-    // 🔹 Somando os Valores dos Pagamentos (mês)
     $result = $conn->query("SELECT SUM(valor) AS total_pago FROM pagamento 
                             WHERE MONTH(data_hora) = '$mesAtual' AND YEAR(data_hora) = '$anoAtual'");
     $pagamento = 0.00;
@@ -63,17 +58,14 @@
     }
     $mesAnoAtual = date('Y-m'); // Exemplo: "2025-09"
 
-    // Serviços do mês (lucro real)
     $sqlServicosMes = "SELECT IFNULL(SUM(valor), 0) AS totalServicosMes 
                     FROM servicos 
                     WHERE DATE_FORMAT(data, '%Y-%m') = '$mesAnoAtual'";
     $resServMes = $conn->query($sqlServicosMes);
     $servicosMes = $resServMes->fetch_assoc()['totalServicosMes'];
 
-    // Lucro atual (sem considerar despesas da lan house)
     $lucro = $servicosMes;
 
-    // 🔹 Valores dos Serviços (mês)
     $sql = "SELECT SUM(valor) as total FROM servicos 
             WHERE MONTH(data) = '$mesAtual' AND YEAR(data) = '$anoAtual'";
     $result = $conn->query($sql);
@@ -83,7 +75,6 @@
         $total = $row['total'] ?? 0;
     }
 
-    // 🔹 Buscando valores para gráficos (mês)
     $sqlFunc = "SELECT usuario, SUM(valor) as total 
                 FROM servicos 
                 WHERE MONTH(data) = '$mesAtual' AND YEAR(data) = '$anoAtual'
@@ -112,7 +103,6 @@
     // Meta do mês (exemplo, você pode ajustar)
     $metaMes = 5000.00;
 
-    // Total de serviços do mês (lucro real)
     $sqlServicos = "SELECT SUM(valor) AS total 
     FROM servicos
     WHERE DATE(data) = '$hoje'";
@@ -145,23 +135,30 @@
 
 <body>
 
-    <div class="nav">
-        <div>
-            <h1>LAN HOUSE ISNARA - FINANCEIRO</h1>
-        </div>
-        <div>
-            <h2>
-                <img src="../imagens/user.png" alt="user">
-                <?php
-                    echo $_SESSION['usuario'];
-                    ?>
-                <img src="../imagens/seta-baixo.png" alt="seta">
-            </h2>
+    <div class="nav full">
+        <h1>LAN HOUSE ISNARA - FINANCEIRO</h1>
+
+        <div class="nav-right">
+            <div class="datetime">
+                📅 <?php echo date('d/m/Y'); ?> ⏰ <?php echo date('H:i'); ?>
+            </div>
+
+            <div class="user-menu">
+                <div class="user-trigger">
+                    <img class="avatar" src="../imagens/user.png" alt="user">
+                    <span><?php echo $_SESSION['usuario']; ?></span>
+                    <img class="arrow" src="../imagens/seta-baixo.png" alt="seta">
+                </div>
+                <ul class="dropdown">
+                    <li><a href="#">⚙️ Configurações</a></li>
+                    <li><a href="#">👤 Perfil</a></li>
+                    <li><a href="../logout.php">🚪 Sair</a></li>
+                </ul>
+            </div>
         </div>
     </div>
     <div class="dashboard">
 
-        <!-- 🔹 Indicadores rápidos -->
         <div class="indicadores-rapidos">
             <div class="indicador">
                 <h3>💻 Máquinas Ativas</h3>
@@ -177,7 +174,6 @@
             </div>
         </div>
 
-        <!-- 🔹 Cards com progresso -->
         <div class="cards-resumo">
             <div class="card">
                 <h3>📊 Lucro da Lan House (Mês)</h3>
@@ -220,7 +216,6 @@
             </div>
         </div>
 
-        <!-- 🔹 Gráficos -->
         <div class="grafico">
             <h2>Total por Funcionário (Mês)</h2>
             <canvas id="graficoFuncionario"></canvas>
