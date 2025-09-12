@@ -1,0 +1,209 @@
+.config-container {
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 20px;
+    background: linear-gradient(90deg, #f8f9fa, #e9ecef);
+    border-radius: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    font-family: Arial, sans-serif;
+}
+
+.config-container h1 {
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 1.8rem;
+    color: #555;
+}
+
+.cards-config {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px;
+}
+
+.card-config {
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+}
+
+.card-config:hover {
+    transform: scale(1.03);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.card-config h2 {
+    font-size: 1.3rem;
+    color: #555;
+    margin: 15px 0 10px;
+}
+
+.card-config p {
+    font-size: 0.95rem;
+    color: #555;
+}
+
+.icon {
+    font-size: 2rem;
+}
+
+/* Dashboard Container */
+.dashboard-mes {
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 30px;
+    border-radius: 30px;
+    background: linear-gradient(90deg, #f8f9fa, #e9ecef);
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+/* Título */
+.dashboard-mes h1 {
+    font-size: 2rem;
+    color: #555;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* Indicadores rápidos */
+.indicadores-rapidos {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.indicador {
+    flex: 1 1 220px;
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.indicador:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.indicador h3 {
+    color: #555;
+    font-size: 1rem;
+    margin-bottom: 10px;
+}
+
+.indicador p {
+    color: #555;
+    font-size: 1.3rem;
+    font-weight: bold;
+}
+
+/* Cards resumo mensal */
+.cards-resumo {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: space-around;
+}
+
+.card-mes {
+    flex: 1 1 240px;
+    background: #fff;
+    border-radius: 20px;
+    padding: 25px;
+    text-align: center;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.card-mes:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+}
+
+.card-mes h3 {
+    font-size: 1.1rem;
+    margin-bottom: 12px;
+    color: #555;
+}
+
+.card-mes p {
+    color: #555;
+    font-size: 1.4rem;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+/* Barras de progresso */
+.barra-container {
+    width: 100%;
+    height: 22px;
+    background: #eee;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.preenchimento {
+    height: 100%;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    color: white;
+    font-weight: bold;
+    padding-right: 8px;
+    border-radius: 12px;
+    transition: width 1.5s ease-in-out;
+}
+
+.preenchimento.lucro {
+    background-color: #28a745;
+}
+
+.preenchimento.deposito {
+    background-color: #007bff;
+}
+
+.preenchimento.pagamento {
+    background-color: #6c757d;
+}
+
+.preenchimento.servico {
+    background-color: #17a2b8;
+}
+
+.preenchimento span.percentual {
+    font-size: 0.85rem;
+}
+
+/* Canvas gráfico */
+#graficoMes {
+    background: #fff;
+    padding: 20px;
+    border-radius: 20px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsividade */
+@media (max-width: 1000px) {
+
+    .indicadores-rapidos,
+    .cards-resumo {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .card-mes,
+    .indicador {
+        width: 90%;
+    }
+}

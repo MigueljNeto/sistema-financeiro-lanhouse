@@ -28,7 +28,7 @@ function fecharModalMaquina(id) {
 
 function abrirModalExcluir(id) {
     document.getElementById("idExcluir").value = id;
-    const modal = document.getElementById("modalExcluir");  
+    const modal = document.getElementById("modalExcluir");
     modal.style.display = "flex";
 }
 
@@ -196,5 +196,18 @@ window.addEventListener('DOMContentLoaded', () => {
 
         barra.style.width = percentual + '%';
         barra.querySelector('.percentual').textContent = Math.round(percentual) + '%';
+    });
+});
+document.addEventListener("DOMContentLoaded", () => {
+    const userMenu = document.querySelector('.user-menu');
+    const trigger = document.querySelector('.user-trigger');
+
+    trigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        userMenu.classList.toggle('active');
+    });
+
+    document.addEventListener('click', () => {
+        userMenu.classList.remove('active');
     });
 });

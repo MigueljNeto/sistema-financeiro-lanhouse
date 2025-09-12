@@ -37,86 +37,57 @@
         $total = $row['total'] ?? 0.00;
     }
 
-    $mesAtual = date('m');
-    $anoAtual = date('Y');
+    $hoje = date('Y-m-d');
 
-    $sql = "SELECT SUM(valor) AS total FROM deposito 
-            WHERE MONTH(data) = '$mesAtual' AND YEAR(data) = '$anoAtual'";
-    $resultado = $conn->query($sql);
-
-    $deposito = 0.00;
-    if ($resultado && $linha = $resultado->fetch_assoc()) {
-        $deposito = $linha['total'] ?? 0.00;
-    }
-
-    $result = $conn->query("SELECT SUM(valor) AS total_pago FROM pagamento 
-                            WHERE MONTH(data_hora) = '$mesAtual' AND YEAR(data_hora) = '$anoAtual'");
-    $pagamento = 0.00;
-    if($result){
-        $row = $result->fetch_assoc();
-        $pagamento = $row['total_pago'] ?? 0.00;
-    }
-    $mesAnoAtual = date('Y-m'); // Exemplo: "2025-09"
-
-    $sqlServicosMes = "SELECT IFNULL(SUM(valor), 0) AS totalServicosMes 
-                    FROM servicos 
-                    WHERE DATE_FORMAT(data, '%Y-%m') = '$mesAnoAtual'";
-    $resServMes = $conn->query($sqlServicosMes);
-    $servicosMes = $resServMes->fetch_assoc()['totalServicosMes'];
-
-    $lucro = $servicosMes;
-
-    $sql = "SELECT SUM(valor) as total FROM servicos 
-            WHERE MONTH(data) = '$mesAtual' AND YEAR(data) = '$anoAtual'";
-    $result = $conn->query($sql);
-
-    $total = 0.00;
-    if ($result && $row = $result->fetch_assoc()) {
-        $total = $row['total'] ?? 0;
-    }
-
-    $sqlFunc = "SELECT usuario, SUM(valor) as total 
-                FROM servicos 
-                WHERE MONTH(data) = '$mesAtual' AND YEAR(data) = '$anoAtual'
-                GROUP BY usuario";
-    $resFunc = $conn->query($sqlFunc);
-
-    $usuario = [];
-    $valoresUsuarios = [];
-    while ($row = $resFunc -> fetch_assoc()){
-        $usuario[] = $row['usuario'];
-        $valoresUsuarios[] = $row['total'];
-    }
-
-    $sqlPag = "SELECT tipo_pagamento, SUM(valor) as total 
-               FROM servicos 
-               WHERE MONTH(data) = '$mesAtual' AND YEAR(data) = '$anoAtual'
-               GROUP BY tipo_pagamento";
-    $resPag = $conn->query($sqlPag);
-
-    $formas = [];
-    $valoresPag = [];
-    while ($row = $resPag -> fetch_assoc()){
-        $formas[] = $row['tipo_pagamento'];
-        $valoresPag[] = $row['total'];
-    }
-    // Meta do mês (exemplo, você pode ajustar)
-    $metaMes = 5000.00;
-
-    $sqlServicos = "SELECT SUM(valor) AS total 
-    FROM servicos
-    WHERE DATE(data) = '$hoje'";
-    $resultadoServicos = $conn->query($sqlServicos);
-
+    // Total de Serviços do Dia
     $totalServicos = 0.00;
-    if ($resultadoServicos && $linhaServicos = $resultadoServicos->fetch_assoc()) {
-        $totalServicos = $linhaServicos['total'] ?? 0.00;
+    $resultadoServicos = $conn->query("SELECT SUM(valor) AS total FROM servicos WHERE DATE(data) = '$hoje'");
+    if ($resultadoServicos && $linha = $resultadoServicos->fetch_assoc()) {
+        $totalServicos = $linha['total'] ?? 0.00;
     }
 
-    $percentLucro = ($lucro > 0 && $metaMes > 0) ? round(($lucro / $metaMes) * 100) : 0;
-    $percentDeposito = ($deposito > 0 && $metaMes > 0) ? round(($deposito / $metaMes) * 100) : 0;
-    $percentPagamento = ($pagamento > 0 && $metaMes > 0) ? round(($pagamento / $metaMes) * 100) : 0;
-    $percentServicos = ($totalServicos > 0 && $metaMes > 0) ? round(($totalServicos / $metaMes) * 100) : 0;
+    // Depósitos do Dia
+    $depositoDia = 0.00;
+    $resultadoDeposito = $conn->query("SELECT SUM(valor) AS total FROM deposito WHERE DATE(data) = '$hoje'");
+    if ($resultadoDeposito && $linha = $resultadoDeposito->fetch_assoc()) {
+        $depositoDia = $linha['total'] ?? 0.00;
+    }
+
+    // Pagamentos do Dia
+    $pagamentoDia = 0.00;
+    $resultadoPagamento = $conn->query("SELECT SUM(valor) AS total FROM pagamento WHERE DATE(data_hora) = '$hoje'");
+    if ($resultadoPagamento && $linha = $resultadoPagamento->fetch_assoc()) {
+        $pagamentoDia = $linha['total'] ?? 0.00;
+    }
+
+    // Valor em Máquinas (serviços feitos nas máquinas)
+    $valorMaquinas = 0.00;
+    $resultadoMaquinas = $conn->query("SELECT SUM(valor) AS total FROM servicos WHERE DATE(data) = '$hoje' AND tipo_servico='maquina'");
+    if ($resultadoMaquinas && $linha = $resultadoMaquinas->fetch_assoc()) {
+        $valorMaquinas = $linha['total'] ?? 0.00;
+    }
+
+    // Funcionário Destaque do Dia
+    $funcionarioTop = '—';
+    $resultadoFuncTop = $conn->query("SELECT usuario, SUM(valor) AS total 
+                                    FROM servicos 
+                                    WHERE DATE(data) = '$hoje' 
+                                    GROUP BY usuario 
+                                    ORDER BY total DESC 
+                                    LIMIT 1");
+    if ($resultadoFuncTop && $linha = $resultadoFuncTop->fetch_assoc()) {
+        $funcionarioTop = $linha['usuario'] ?? '—';
+    }
+
+    // Meta do Dia
+    $metaDia = 1000.00;
+
+    // Percentuais das Barras (evitar divisão por zero)
+    $lucroDia = $totalServicos;
+    $percentLucro = ($metaDia > 0) ? round(($lucroDia / $metaDia) * 100) : 0;
+    $percentDeposito = ($metaDia > 0) ? round(($depositoDia / $metaDia) * 100) : 0;
+    $percentPagamento = ($metaDia > 0) ? round(($pagamentoDia / $metaDia) * 100) : 0;
+    $percentServicos = ($metaDia > 0) ? round(($totalServicos / $metaDia) * 100) : 0;
 
 ?>
 
@@ -150,7 +121,7 @@
                     <img class="arrow" src="../imagens/seta-baixo.png" alt="seta">
                 </div>
                 <ul class="dropdown">
-                    <li><a href="#">⚙️ Configurações</a></li>
+                    <li><a href="../adm/configuracao.php">⚙️ Configurações</a></li>
                     <li><a href="#">👤 Perfil</a></li>
                     <li><a href="../logout.php">🚪 Sair</a></li>
                 </ul>
@@ -159,25 +130,30 @@
     </div>
     <div class="dashboard">
 
+        <!-- Indicadores Rápidos do Dia -->
         <div class="indicadores-rapidos">
             <div class="indicador">
-                <h3>💻 Máquinas Ativas</h3>
-                <p><?= $maquinasAtivas ?? 0 ?></p>
-            </div>
-            <div class="indicador">
                 <h3>📊 Serviços Hoje</h3>
-                <p>R$ <?php echo number_format($totalServicos, 2, ',', '.'); ?></p>
+                <p>R$ <?= number_format($totalServicos, 2, ',', '.') ?></p>
             </div>
             <div class="indicador">
-                <h3>🎯 Meta do Mês</h3>
-                <p>R$ <?= number_format($metaMes,2,',','.') ?></p>
+                <h3>🎯 Meta do Dia</h3>
+                <p>R$ <?= number_format($metaDia, 2, ',', '.') ?></p>
+            </div>
+            <div class="indicador">
+                <h3>💰 Valor em Máquinas</h3>
+                <p>R$ <?= number_format($valorMaquinas, 2, ',', '.') ?></p>
+            </div>
+            <div class="indicador">
+                <h3>🏆 Funcionário Destaque</h3>
+                <p><?= $funcionarioTop ?? '—' ?></p>
             </div>
         </div>
 
         <div class="cards-resumo">
             <div class="card">
-                <h3>📊 Lucro da Lan House (Mês)</h3>
-                <p>R$ <?= number_format($lucro,2,',','.') ?></p>
+                <h3>📊 Lucro do Dia</h3>
+                <p>R$ <?= number_format($lucroDia, 2, ',', '.') ?></p>
                 <div class="barra-container">
                     <div class="preenchimento lucro" style="width: <?= $percentLucro ?>%">
                         <span class="percentual"><?= $percentLucro ?>%</span>
@@ -186,8 +162,8 @@
             </div>
 
             <div class="card">
-                <h3>📈 Depósitos (Mês)</h3>
-                <p>R$ <?= number_format($deposito,2,',','.') ?></p>
+                <h3>📈 Depósitos</h3>
+                <p>R$ <?= number_format($depositoDia, 2, ',', '.') ?></p>
                 <div class="barra-container">
                     <div class="preenchimento deposito" style="width: <?= $percentDeposito ?>%">
                         <span class="percentual"><?= $percentDeposito ?>%</span>
@@ -196,8 +172,8 @@
             </div>
 
             <div class="card">
-                <h3>📉 Pagamentos (Mês)</h3>
-                <p>R$ <?= number_format($pagamento,2,',','.') ?></p>
+                <h3>📉 Pagamentos</h3>
+                <p>R$ <?= number_format($pagamentoDia, 2, ',', '.') ?></p>
                 <div class="barra-container">
                     <div class="preenchimento pagamento" style="width: <?= $percentPagamento ?>%">
                         <span class="percentual"><?= $percentPagamento ?>%</span>
@@ -206,8 +182,8 @@
             </div>
 
             <div class="card">
-                <h3>🛠 Serviços (Mês)</h3>
-                <p>R$ <?= number_format($totalServicos,2,',','.') ?></p>
+                <h3>🛠 Serviços</h3>
+                <p>R$ <?= number_format($totalServicos, 2, ',', '.') ?></p>
                 <div class="barra-container">
                     <div class="preenchimento servico" style="width: <?= $percentServicos ?>%">
                         <span class="percentual"><?= $percentServicos ?>%</span>
@@ -216,84 +192,10 @@
             </div>
         </div>
 
-        <div class="grafico">
-            <h2>Total por Funcionário (Mês)</h2>
-            <canvas id="graficoFuncionario"></canvas>
-        </div>
-
-        <div class="grafico">
-            <h2>Total por Forma de Pagamento (Mês)</h2>
-            <canvas id="graficoPagamento"></canvas>
-        </div>
-
     </div>
-
-    <script>
-    new Chart(document.getElementById('graficoFuncionario'), {
-        type: 'bar',
-        data: {
-            labels: <?= json_encode($usuario) ?>,
-            datasets: [{
-                label: 'Total (R$)',
-                data: <?= json_encode($valoresUsuarios) ?>,
-                backgroundColor: 'rgba(54, 162, 235, 0.6)',
-                borderColor: 'rgba(54, 162, 235, 1)',
-                borderWidth: 1,
-                borderRadius: 6
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    display: false
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            }
-        }
-    });
-
-    new Chart(document.getElementById('graficoPagamento'), {
-        type: 'bar',
-        data: {
-            labels: <?= json_encode($formas) ?>,
-            datasets: [{
-                label: 'Total (R$)',
-                data: <?= json_encode($valoresPag) ?>,
-                backgroundColor: 'rgba(75, 192, 192, 0.6)',
-                borderColor: 'rgba(75, 192, 192, 1)',
-                borderWidth: 1,
-                borderRadius: 6
-            }]
-        },
-        options: {
-            indexAxis: 'y',
-            responsive: true,
-            plugins: {
-                legend: {
-                    display: false
-                }
-            },
-            scales: {
-                x: {
-                    beginAtZero: true
-                }
-            }
-        }
-    });
-    </script>
 
     <div class="conteiner_aba">
         <div class="abas">
-            <div class="barra-container">
-                <div class="preenchimento deposito" data-meta="10000" data-valor="<?php echo $totalDeposito; ?>">
-                    <span class="percentual"></span>
-                </div>
-            </div>
             <h1>
                 DEPOSITO
             </h1>
@@ -311,11 +213,6 @@
 
 
         <div class="abas">
-            <div class="barra-container">
-                <div class="preenchimento pagamento" data-meta="10000" data-valor="<?php echo $total_pago; ?>">
-                    <span class="percentual"></span>
-                </div>
-            </div>
             <h1>
                 CONTAS PAGAS
             </h1>
@@ -331,11 +228,6 @@
         </div>
 
         <div class="abas">
-            <div class="barra-container">
-                <div class="preenchimento servico" data-meta="2000" data-valor="<?php echo $total; ?>">
-                    <span class="percentual"></span>
-                </div>
-            </div>
             <h1>
                 SERVIÇOS
             </h1>
@@ -459,16 +351,16 @@
                         </div>
                         
                         <div class="resumo-servicos">
-                            <p>Impressões: <span id="impressoes_'.$id.'">'.$impressoes.'</span></p>
-                            <p>Scanners: <span id="scanners_'.$id.'">'.$scanners.'</span></p>
-                        </div>
-
-                        <div class="atalhos-servicos">
-                            <button onclick="adicionarServico('.$id.', \'impressoes\')">+ Impressão</button>
-                            <button onclick="removerServico('.$id.', \'impressoes\')">- Impressão</button>
-
-                            <button onclick="adicionarServico('.$id.', \'scanners\')">+ Scanner</button>
-                            <button onclick="removerServico('.$id.', \'scanners\')">- Scanner</button>
+                            <p>
+                                <button class="btn-remove" onclick="removerServico('.$id.', \'impressoes\')">-</button>
+                                Impressões: <span id="impressoes_'.$id.'">'.$impressoes.'</span>
+                                <button class="btn-add" onclick="adicionarServico('.$id.', \'impressoes\')">+</button>
+                            </p>
+                            <p>
+                                <button class="btn-remove" onclick="removerServico('.$id.', \'scanners\')">-</button>
+                                Scanners: <span id="scanners_'.$id.'">'.$scanners.'</span>
+                                <button class="btn-add" onclick="adicionarServico('.$id.', \'scanners\')">+</button>
+                            </p>
                         </div>
 
                         <div>
@@ -524,6 +416,7 @@
             </form>
         </div>
     </div>
+
 </body>
 
 </html>
