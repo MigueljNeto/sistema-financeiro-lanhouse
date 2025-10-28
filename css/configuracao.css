@@ -192,7 +192,12 @@
     border-radius: 20px;
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
 }
+.inputsMetas form{
+    display: flex;
+    flex-direction: column;
 
+
+}
 /* Responsividade */
 @media (max-width: 1000px) {
 

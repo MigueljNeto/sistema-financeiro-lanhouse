@@ -1,6 +1,7 @@
 <?php
     session_start();
     require_once "../includes/servidor.php";
+    date_default_timezone_set('America/Sao_Paulo');
 
     $acao = $_POST['acao'] ?? '';
     $id   = intval($_POST['id_maquina'] ?? 0);

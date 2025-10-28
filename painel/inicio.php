@@ -4,6 +4,8 @@
     
     date_default_timezone_set('America/Sao_Paulo');
 
+    // pegas os valores do banco de dados
+
     $hoje = date('Y-m-d');
 
     $sql = "SELECT SUM(valor) AS total 
@@ -43,51 +45,43 @@
     $totalServicos = 0.00;
     $resultadoServicos = $conn->query("SELECT SUM(valor) AS total FROM servicos WHERE DATE(data) = '$hoje'");
     if ($resultadoServicos && $linha = $resultadoServicos->fetch_assoc()) {
-        $totalServicos = $linha['total'] ?? 0.00;
+        $totalServicos = floatval($linha['total']); // garante número
     }
 
     // Depósitos do Dia
     $depositoDia = 0.00;
     $resultadoDeposito = $conn->query("SELECT SUM(valor) AS total FROM deposito WHERE DATE(data) = '$hoje'");
     if ($resultadoDeposito && $linha = $resultadoDeposito->fetch_assoc()) {
-        $depositoDia = $linha['total'] ?? 0.00;
+        $depositoDia = floatval($linha['total']);
     }
 
     // Pagamentos do Dia
     $pagamentoDia = 0.00;
     $resultadoPagamento = $conn->query("SELECT SUM(valor) AS total FROM pagamento WHERE DATE(data_hora) = '$hoje'");
     if ($resultadoPagamento && $linha = $resultadoPagamento->fetch_assoc()) {
-        $pagamentoDia = $linha['total'] ?? 0.00;
+        $pagamentoDia = floatval($linha['total']);
     }
 
-    // Valor em Máquinas (serviços feitos nas máquinas)
+    // Valor em Máquinas
     $valorMaquinas = 0.00;
     $resultadoMaquinas = $conn->query("SELECT SUM(valor) AS total FROM servicos WHERE DATE(data) = '$hoje' AND tipo_servico='maquina'");
     if ($resultadoMaquinas && $linha = $resultadoMaquinas->fetch_assoc()) {
-        $valorMaquinas = $linha['total'] ?? 0.00;
+        $valorMaquinas = floatval($linha['total']);
     }
 
-    // Funcionário Destaque do Dia
-    $funcionarioTop = '—';
-    $resultadoFuncTop = $conn->query("SELECT usuario, SUM(valor) AS total 
-                                    FROM servicos 
-                                    WHERE DATE(data) = '$hoje' 
-                                    GROUP BY usuario 
-                                    ORDER BY total DESC 
-                                    LIMIT 1");
-    if ($resultadoFuncTop && $linha = $resultadoFuncTop->fetch_assoc()) {
-        $funcionarioTop = $linha['usuario'] ?? '—';
-    }
-
-    // Meta do Dia
+    // Meta e cálculos
     $metaDia = 1000.00;
 
-    // Percentuais das Barras (evitar divisão por zero)
-    $lucroDia = $totalServicos;
-    $percentLucro = ($metaDia > 0) ? round(($lucroDia / $metaDia) * 100) : 0;
-    $percentDeposito = ($metaDia > 0) ? round(($depositoDia / $metaDia) * 100) : 0;
-    $percentPagamento = ($metaDia > 0) ? round(($pagamentoDia / $metaDia) * 100) : 0;
-    $percentServicos = ($metaDia > 0) ? round(($totalServicos / $metaDia) * 100) : 0;
+    // 🔹 Define lucro com base no total de serviços
+    $lucroDia = $totalServicos;  // ← aqui define ANTES de usar
+
+     var_dump($metaDia, $lucroDia, $depositoDia, $pagamentoDia, $totalServicos);
+
+    // 🔸 Cálculo de percentuais (sempre com valores numéricos)
+    $percentLucro      = ($metaDia > 0) ? round(($lucroDia / $metaDia) * 100) : 0;
+    $percentDeposito   = ($metaDia > 0) ? round(($depositoDia / $metaDia) * 100) : 0;
+    $percentPagamento  = ($metaDia > 0) ? round(($pagamentoDia / $metaDia) * 100) : 0;
+    $percentServicos   = ($metaDia > 0) ? round(($totalServicos / $metaDia) * 100) : 0;
 
 ?>
 
@@ -144,56 +138,57 @@
                 <h3>💰 Valor em Máquinas</h3>
                 <p>R$ <?= number_format($valorMaquinas, 2, ',', '.') ?></p>
             </div>
-            <div class="indicador">
-                <h3>🏆 Funcionário Destaque</h3>
-                <p><?= $funcionarioTop ?? '—' ?></p>
-            </div>
+
         </div>
 
         <div class="cards-resumo">
             <div class="card">
                 <h3>📊 Lucro do Dia</h3>
-                <p>R$ <?= number_format($lucroDia, 2, ',', '.') ?></p>
+                <p>R$ <?= number_format($lucroDia ?? 0, 2, ',', '.') ?></p>
                 <div class="barra-container">
-                    <div class="preenchimento lucro" style="width: <?= $percentLucro ?>%">
-                        <span class="percentual"><?= $percentLucro ?>%</span>
+                    <div class="preenchimento lucro" data-valor="<?= floatval($lucroDia ?? 0) ?>"
+                        data-meta="<?= floatval($metaLucro ?? 1) ?>">
+                        <span class="percentual"></span>
                     </div>
                 </div>
             </div>
 
             <div class="card">
                 <h3>📈 Depósitos</h3>
-                <p>R$ <?= number_format($depositoDia, 2, ',', '.') ?></p>
+                <p>R$ <?= number_format($depositoDia ?? 0, 2, ',', '.') ?></p>
                 <div class="barra-container">
-                    <div class="preenchimento deposito" style="width: <?= $percentDeposito ?>%">
-                        <span class="percentual"><?= $percentDeposito ?>%</span>
+                    <div class="preenchimento deposito" data-valor="<?= floatval($depositoDia ?? 0) ?>"
+                        data-meta="<?= floatval($metaDeposito ?? 1) ?>">
+                        <span class="percentual"></span>
                     </div>
                 </div>
             </div>
 
             <div class="card">
                 <h3>📉 Pagamentos</h3>
-                <p>R$ <?= number_format($pagamentoDia, 2, ',', '.') ?></p>
+                <p>R$ <?= number_format($pagamentoDia ?? 0, 2, ',', '.') ?></p>
                 <div class="barra-container">
-                    <div class="preenchimento pagamento" style="width: <?= $percentPagamento ?>%">
-                        <span class="percentual"><?= $percentPagamento ?>%</span>
+                    <div class="preenchimento pagamento" data-valor="<?= floatval($pagamentoDia ?? 0) ?>"
+                        data-meta="<?= floatval($metaPagamento ?? 1) ?>">
+                        <span class="percentual"></span>
                     </div>
                 </div>
             </div>
 
             <div class="card">
                 <h3>🛠 Serviços</h3>
-                <p>R$ <?= number_format($totalServicos, 2, ',', '.') ?></p>
+                <p>R$ <?= number_format($totalServicos ?? 0, 2, ',', '.') ?></p>
                 <div class="barra-container">
-                    <div class="preenchimento servico" style="width: <?= $percentServicos ?>%">
-                        <span class="percentual"><?= $percentServicos ?>%</span>
+                    <div class="preenchimento servico" data-valor="<?= floatval($totalServicos ?? 0) ?>"
+                        data-meta="<?= floatval($metaServicos ?? 1) ?>">
+                        <span class="percentual"></span>
                     </div>
                 </div>
             </div>
         </div>
-
     </div>
 
+    <!-- Conteiner para adiconar os serviços -->
     <div class="conteiner_aba">
         <div class="abas">
             <h1>
@@ -302,6 +297,7 @@
         </div>
     </div>
 
+    <!-- Contadores das maquinas -->
     <div class="conteiner_contador">
 
         <div class="add">
@@ -408,7 +404,7 @@
     <div id="modal-maquina" class="fundo-modal">
         <div class="caixa-modal-maq">
             <button class="botao-fechar" onclick="fecharModal('modal-maquina')">X</button>
-            <h2>Registrar Depósito</h2>
+            <h2>Nova Maquina</h2>
             <form action="maquina.php" method="post">
                 <label for="">Nome da Maquina:</label>
                 <input type="text" name="maquina" required>
