@@ -7,7 +7,6 @@
    display: flex;
    flex-direction: column;
    gap: 10px;
-
    transform: translateY(-20px);
    opacity: 0;
    transition: transform 0.3s ease, opacity 0.3s ease;
@@ -17,6 +16,27 @@
    transform: translateY(0);
    opacity: 1;
 }
+
+.caixa-modal-maq form {
+   display: flex;
+   flex-direction: column;
+   gap: 5px;
+}
+
+.caixa-modal-maq form input {
+   border: none;
+   border-radius: 30px;
+   background-color: #fff;
+   padding: 10px;
+   box-shadow: 0 0 8px rgba(207, 59, 0, 0.2);
+}
+
+.caixa-modal-maq form label {
+   font-weight: bold;
+   font-size: 14px;
+   color: #333;
+}
+
 
 .caixa-modal form {
    display: flex;
@@ -54,56 +74,58 @@
    transform: translateY(-20px);
    opacity: 0;
    transition: transform 0.3s ease, opacity 0.3s ease;
-} 
+}
 
 .fundo-modal.ativo .caixa-modal-maq {
    transform: translateY(0);
    opacity: 1;
-} 
+}
 
 .modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.6);
-    display: none; /* começa escondido */
-    align-items: center;
-    justify-content: center;
+   position: fixed;
+   top: 0;
+   left: 0;
+   width: 100%;
+   height: 100%;
+   background: rgba(0, 0, 0, 0.6);
+   display: none;
+   /* começa escondido */
+   align-items: center;
+   justify-content: center;
 }
 
 .modal-conteudo {
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    text-align: center;
-    max-width: 300px;
-    width: 100%;
-} 
+   background: white;
+   padding: 20px;
+   border-radius: 10px;
+   text-align: center;
+   max-width: 300px;
+   width: 100%;
+}
 
 .modalMaqServ {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.6);
-    display: none; /* começa escondido */
-    align-items: center;
-    justify-content: center;
+   position: fixed;
+   top: 0;
+   left: 0;
+   width: 100%;
+   height: 100%;
+   background: rgba(0, 0, 0, 0.6);
+   display: none;
+   /* começa escondido */
+   align-items: center;
+   justify-content: center;
 }
 
 .modalMaq {
-   position: relative; 
+   position: relative;
    background: #fff;
    padding: 20px;
    border-radius: 12px;
    text-align: center;
    max-width: 320px;
    width: 100%;
-   box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-} 
+   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
 
 .modalMaq form {
    display: flex;
@@ -112,9 +134,9 @@
 }
 
 .modalMaq form label {
-    font-weight: bold;
-    font-size: 14px;
-    color: #333;
+   font-weight: bold;
+   font-size: 14px;
+   color: #333;
 }
 
 .modalMaq form input {

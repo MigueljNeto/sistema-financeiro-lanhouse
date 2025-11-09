@@ -1,47 +1,73 @@
+/* ====== BASE ====== */
+:root {
+    --cor-fundo: #f5f7fa;
+    --cor-gradiente: linear-gradient(120deg, #fdfbfb, #ebedee);
+    --cor-primaria: #007bff;
+    --cor-secundaria: #17a2b8;
+    --cor-sucesso: #28a745;
+    --cor-pagamento: #6c757d;
+    --cor-texto: #444;
+    --cor-branco: #fff;
+    --radius-padrao: 20px;
+    --sombra-suave: 0 4px 14px rgba(0, 0, 0, 0.08);
+    --transicao: all 0.25s ease;
+    --fonte-principal: 'Poppins', Arial, sans-serif;
+}
+
+body {
+    background: var(--cor-gradiente);
+    font-family: var(--fonte-principal);
+    color: var(--cor-texto);
+    margin: 0;
+    padding: 0;
+}
+
+/* ====== CONTAINER PRINCIPAL ====== */
 .config-container {
-    max-width: 1000px;
+    max-width: 1200px;
     margin: 40px auto;
-    padding: 20px;
-    background: linear-gradient(90deg, #f8f9fa, #e9ecef);
-    border-radius: 20px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    font-family: Arial, sans-serif;
+    padding: 25px;
+    background: var(--cor-branco);
+    border-radius: var(--radius-padrao);
+    box-shadow: var(--sombra-suave);
+    text-align: center;
 }
 
 .config-container h1 {
-    text-align: center;
+    font-size: 2rem;
+    color: #333;
     margin-bottom: 30px;
-    font-size: 1.8rem;
-    color: #555;
 }
 
+/* ====== CARDS DE CONFIG ====== */
 .cards-config {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-    gap: 20px;
+    gap: 25px;
+    margin-top: 100px;
 }
 
 .card-config {
-    background: #fff;
-    border-radius: 16px;
-    padding: 20px;
+    background: var(--cor-gradiente);
+    border-radius: var(--radius-padrao);
+    padding: 25px;
     text-align: center;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: var(--sombra-suave);
+    transition: var(--transicao);
     cursor: pointer;
     text-decoration: none;
     color: inherit;
 }
 
 .card-config:hover {
-    transform: scale(1.03);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+    transform: translateY(-5px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
 }
 
 .card-config h2 {
     font-size: 1.3rem;
-    color: #555;
-    margin: 15px 0 10px;
+    color: #333;
+    margin-top: 12px;
 }
 
 .card-config p {
@@ -50,105 +76,102 @@
 }
 
 .icon {
-    font-size: 2rem;
+    font-size: 2.2rem;
 }
 
-/* Dashboard Container */
+/* ====== DASHBOARD ====== */
 .dashboard-mes {
     max-width: 1200px;
-    margin: 30px auto;
-    padding: 30px;
-    border-radius: 30px;
-    background: linear-gradient(90deg, #f8f9fa, #e9ecef);
+    margin: 40px auto;
+    padding: 35px;
+    border-radius: var(--radius-padrao);
+    background: var(--cor-branco);
+    box-shadow: var(--sombra-suave);
     display: flex;
     flex-direction: column;
-    gap: 30px;
+    gap: 40px;
 }
 
-/* Título */
 .dashboard-mes h1 {
-    font-size: 2rem;
-    color: #555;
+    font-size: 1.9rem;
+    color: #222;
     text-align: center;
-    margin-bottom: 20px;
 }
 
-/* Indicadores rápidos */
+/* ====== INDICADORES ====== */
 .indicadores-rapidos {
     display: flex;
     justify-content: space-around;
     flex-wrap: wrap;
-    gap: 20px;
+    gap: 25px;
 }
 
 .indicador {
-    flex: 1 1 220px;
-    background: #fff;
-    border-radius: 16px;
-    padding: 20px;
+    flex: 1 1 230px;
+    background: var(--cor-gradiente);
+    border-radius: var(--radius-padrao);
+    padding: 25px;
     text-align: center;
-    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: var(--sombra-suave);
+    transition: var(--transicao);
 }
 
 .indicador:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+    transform: translateY(-4px);
 }
 
 .indicador h3 {
-    color: #555;
+    color: #333;
     font-size: 1rem;
     margin-bottom: 10px;
 }
 
 .indicador p {
-    color: #555;
-    font-size: 1.3rem;
+    font-size: 1.4rem;
     font-weight: bold;
+    color: var(--cor-primaria);
 }
 
-/* Cards resumo mensal */
+/* ====== RESUMO MENSAL ====== */
 .cards-resumo {
     display: flex;
     flex-wrap: wrap;
-    gap: 20px;
+    gap: 25px;
     justify-content: space-around;
 }
 
 .card-mes {
     flex: 1 1 240px;
-    background: #fff;
-    border-radius: 20px;
+    background: var(--cor-gradiente);
+    border-radius: var(--radius-padrao);
     padding: 25px;
     text-align: center;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s, box-shadow 0.3s;
+    box-shadow: var(--sombra-suave);
+    transition: var(--transicao);
 }
 
 .card-mes:hover {
     transform: translateY(-5px);
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
 }
 
 .card-mes h3 {
     font-size: 1.1rem;
+    color: #333;
     margin-bottom: 12px;
-    color: #555;
 }
 
 .card-mes p {
-    color: #555;
-    font-size: 1.4rem;
-    font-weight: bold;
+    color: #222;
+    font-size: 1.5rem;
+    font-weight: 600;
     margin-bottom: 15px;
 }
 
-/* Barras de progresso */
+/* ====== BARRAS ====== */
 .barra-container {
     width: 100%;
     height: 22px;
-    background: #eee;
+    background: #e9ecef;
     border-radius: 12px;
     overflow: hidden;
 }
@@ -166,39 +189,81 @@
 }
 
 .preenchimento.lucro {
-    background-color: #28a745;
+    background-color: var(--cor-sucesso);
 }
 
 .preenchimento.deposito {
-    background-color: #007bff;
+    background-color: var(--cor-primaria);
 }
 
 .preenchimento.pagamento {
-    background-color: #6c757d;
+    background-color: var(--cor-pagamento);
 }
 
 .preenchimento.servico {
-    background-color: #17a2b8;
+    background-color: var(--cor-secundaria);
 }
 
 .preenchimento span.percentual {
     font-size: 0.85rem;
 }
 
-/* Canvas gráfico */
-#graficoMes {
-    background: #fff;
-    padding: 20px;
-    border-radius: 20px;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
-}
-.inputsMetas form{
+/* ====== FORMULÁRIOS ====== */
+.inputscards form {
     display: flex;
     flex-direction: column;
-
-
+    gap: 10px;
+    padding-top: 15px;
 }
-/* Responsividade */
+
+.inputscards form input {
+    border: 1px solid #ddd;
+    border-radius: 25px;
+    background-color: #fff;
+    padding: 10px 15px;
+    box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.05);
+    text-align: center;
+    transition: 0.2s;
+}
+
+.inputscards form input:focus {
+    outline: none;
+    border-color: var(--cor-primaria);
+    box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
+}
+
+.inputscards form label {
+    font-weight: 600;
+    font-size: 14px;
+    color: #333;
+    text-align: left;
+}
+.inputscards button {
+   background-color: #3498db;
+   color: white;
+   border: none;
+   padding: 10px 20px;
+   border-radius: 10px;
+   font-size: 1rem;
+   cursor: pointer;
+   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+   transition: background-color 0.3s ease, transform 0.2s;
+}
+
+.inputscards button:hover {
+   background-color: #217dbb;
+   transform: scale(1.05);
+}
+
+/* ====== GRÁFICO ====== */
+#graficoMes {
+    background: var(--cor-branco);
+    padding: 25px;
+    border-radius: var(--radius-padrao);
+    box-shadow: var(--sombra-suave);
+}
+
+/* ====== RESPONSIVIDADE ====== */
 @media (max-width: 1000px) {
 
     .indicadores-rapidos,
@@ -210,5 +275,11 @@
     .card-mes,
     .indicador {
         width: 90%;
+    }
+
+    .config-container,
+    .dashboard-mes {
+        margin: 20px 10px;
+        padding: 20px;
     }
 }

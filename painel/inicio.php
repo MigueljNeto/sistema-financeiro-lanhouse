@@ -64,19 +64,18 @@
 
     // Valor em Máquinas
     $valorMaquinas = 0.00;
-    $resultadoMaquinas = $conn->query("SELECT SUM(valor) AS total FROM servicos WHERE DATE(data) = '$hoje' AND tipo_servico='maquina'");
+    $resultadoMaquinas = $conn->query("SELECT SUM(valor_total) AS total FROM servmaq WHERE DATE(data_registro) = '$hoje'");
     if ($resultadoMaquinas && $linha = $resultadoMaquinas->fetch_assoc()) {
         $valorMaquinas = floatval($linha['total']);
     }
+
 
     // Meta e cálculos
     $metaDia = 1000.00;
 
     // 🔹 Define lucro com base no total de serviços
     $lucroDia = $totalServicos;  // ← aqui define ANTES de usar
-
-     var_dump($metaDia, $lucroDia, $depositoDia, $pagamentoDia, $totalServicos);
-
+    
     // 🔸 Cálculo de percentuais (sempre com valores numéricos)
     $percentLucro      = ($metaDia > 0) ? round(($lucroDia / $metaDia) * 100) : 0;
     $percentDeposito   = ($metaDia > 0) ? round(($depositoDia / $metaDia) * 100) : 0;

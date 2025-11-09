@@ -137,6 +137,14 @@ switch ($acao) {
     $valorScanners = $scn > 0 ? 5.00 + ($scn * 1.00) : 0;
     $valorTotal = $valorTempo + $valorImpressoes + $valorScanners;
 
+    $sql = "INSERT INTO servmaq (id_maquina, impressoes, scanners, valor_total, data_registro)
+        VALUES (?, ?, ?, ?, NOW())";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("iiid", $id, $imp, $scn, $valorTotal);
+    $stmt->execute();
+    $stmt->close();
+
+
     // --- Resetar máquina e serviços ---
     mysqli_query($conn, "UPDATE maquinas SET status='livre', inicio=NULL WHERE id=$id");
     mysqli_query($conn, "UPDATE servmaq SET impressoes=0, scanners=0 WHERE id_maquina=$id");

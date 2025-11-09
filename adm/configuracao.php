@@ -23,7 +23,7 @@
     $totalServicosMes   = somaMes($conn, 'servicos');
     $depositoMes        = somaMes($conn, 'deposito');
     $pagamentoMes       = somaMes($conn, 'pagamento', 'valor', 'data_hora');
-    $valorMaquinasMes   = somaMes($conn, 'servicos', 'valor', 'data', "AND tipo_servico='maquina'");
+    $valorMaquinasMes = somaMes($conn, 'servmaq', 'valor_total', 'data_registro');
 
     // Funcionário destaque do mês
     $resultadoFuncTopMes = $conn->query("
@@ -40,7 +40,21 @@
     }
 
     // Meta mensal
-    $metaMes = 30000.00;
+    $sqlMeta = "SELECT * FROM metas ORDER BY id DESC LIMIT 1";
+    $resMeta = $conn->query($sqlMeta);
+
+    if($resMeta && $resMeta->num_rows > 0){
+        $meta = $resMeta->fetch_assoc();
+        $metaMes = floatval($meta['meta_mes']);
+        $metaDiaPagamento = floatval($meta['meta_dia_pagamento']);
+        $metaDiaServicos = floatval($meta['meta_dia_servicos']);
+        $metaDiaMaquina = floatval($meta['meta_dia_maquina']);
+    }else{
+        $metaMes = 0;
+        $metaDiaServicos = 0;
+        $metaDiaMaquina = 0;
+        $metaDiaPagamento = 0;
+    }
 
     // Percentuais para barras
     function calculaPercent($valor, $meta) {
@@ -64,152 +78,167 @@
 </head>
 
 <body>
-    <div class="config-container">
-        <h1>⚙️ Configurações da Lan House</h1>
-        <div class="cards-config">
-            <a href="#metas" class="card-config">
-                <div class="icon">🎯</div>
-                <h2>Metas</h2>
-            </a>
-            <a href="#funcionarios" class="card-config">
-                <div class="icon">👥</div>
-                <h2>Funcionários</h2>
-            </a>
-            <a href="#servicos" class="card-config">
-                <div class="icon">🛠</div>
-                <h2>Serviços</h2>
-            </a>
+    <header>
+        <nav>
+            <div class="config-container">
+              '  <h1>⚙️ Configurações da Lan House</h1>
+                <div class="cards-config">
+                    <a href="#metas" class="card-config">
+                        <div class="icon">🎯</div>
+                        <h2>Metas</h2>
+                    </a>
+                    <a href="#funcionarios" class="card-config">
+                        <div class="icon">👥</div>
+                        <h2>Funcionários</h2>
+                    </a>
+                    <a href="#servicos" class="card-config">
+                        <div class="icon">🛠</div>
+                        <h2>Serviços</h2>
+                    </a>
+                    <a href="../painel/inicio.php" class="card-config">
+                        <div class="icon">🏠</div>
+                        <h2>Página Inicial</h2>
+                    </a>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <main>
+
+        <div class="dashboard-mes">
+            <h1>📅 Resumo Mensal - <?= date('m/Y') ?></h1>
+
+            <div class="indicadores-rapidos">
+                <div class="indicador">
+                    <h3>📊 Serviços do Mês</h3>
+                    <p>R$ <?= number_format($totalServicosMes, 2, ',', '.') ?></p>
+                </div>
+                <div class="indicador">
+                    <h3>🎯 Meta do Mês</h3>
+                    <p>R$ <?= number_format($metaMes, 2, ',', '.') ?></p>
+                </div>
+                <div class="indicador">
+                    <h3>💰 Valor em Máquinas</h3>
+                    <p>R$ <?= number_format($valorMaquinasMes, 2, ',', '.') ?></p>
+                </div>
+                <div class="indicador">
+                    <h3>🏆 Funcionário Destaque</h3>
+                    <p><?= $funcionarioTopMes ?></p>
+                </div>
+            </div>
+
+            <div class="cards-resumo">
+                <div class="card-mes">
+                    <h3>📊 Lucro do Mês</h3>
+                    <p>R$ <?= number_format($totalServicosMes, 2, ',', '.') ?></p>
+                    <div class="barra-container">
+                        <div class="preenchimento lucro" style="width: <?= $percentLucroMes ?>%">
+                            <span class="percentual"><?= $percentLucroMes ?>%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-mes">
+                    <h3>📈 Depósitos</h3>
+                    <p>R$ <?= number_format($depositoMes, 2, ',', '.') ?></p>
+                    <div class="barra-container">
+                        <div class="preenchimento deposito" style="width: <?= $percentDepositoMes ?>%">
+                            <span class="percentual"><?= $percentDepositoMes ?>%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-mes">
+                    <h3>📉 Pagamentos</h3>
+                    <p>R$ <?= number_format($pagamentoMes, 2, ',', '.') ?></p>
+                    <div class="barra-container">
+                        <div class="preenchimento pagamento" style="width: <?= $percentPagamentoMes ?>%">
+                            <span class="percentual"><?= $percentPagamentoMes ?>%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-mes">
+                    <h3>🛠 Serviços</h3>
+                    <p>R$ <?= number_format($totalServicosMes, 2, ',', '.') ?></p>
+                    <div class="barra-container">
+                        <div class="preenchimento servico" style="width: <?= $percentServicosMes ?>%">
+                            <span class="percentual"><?= $percentServicosMes ?>%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <canvas id="graficoMes" width="400" height="150"></canvas>
+
         </div>
-    </div>
 
-    <div class="dashboard-mes">
-        <h1>📅 Resumo Mensal - <?= date('m/Y') ?></h1>
+        <script>
+        const diasMes = Array.from({
+            length: new Date(<?= $anoAtual ?>, <?= $mesAtual ?>, 0).getDate()
+        }, (_, i) => i + 1);
 
-        <div class="indicadores-rapidos">
-            <div class="indicador">
-                <h3>📊 Serviços do Mês</h3>
-                <p>R$ <?= number_format($totalServicosMes, 2, ',', '.') ?></p>
-            </div>
-            <div class="indicador">
-                <h3>🎯 Meta do Mês</h3>
-                <p>R$ <?= number_format($metaMes, 2, ',', '.') ?></p>
-            </div>
-            <div class="indicador">
-                <h3>💰 Valor em Máquinas</h3>
-                <p>R$ <?= number_format($valorMaquinasMes, 2, ',', '.') ?></p>
-            </div>
-            <div class="indicador">
-                <h3>🏆 Funcionário Destaque</h3>
-                <p><?= $funcionarioTopMes ?></p>
-            </div>
-        </div>
-
-        <div class="cards-resumo">
-            <div class="card-mes">
-                <h3>📊 Lucro do Mês</h3>
-                <p>R$ <?= number_format($totalServicosMes, 2, ',', '.') ?></p>
-                <div class="barra-container">
-                    <div class="preenchimento lucro" style="width: <?= $percentLucroMes ?>%">
-                        <span class="percentual"><?= $percentLucroMes ?>%</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card-mes">
-                <h3>📈 Depósitos</h3>
-                <p>R$ <?= number_format($depositoMes, 2, ',', '.') ?></p>
-                <div class="barra-container">
-                    <div class="preenchimento deposito" style="width: <?= $percentDepositoMes ?>%">
-                        <span class="percentual"><?= $percentDepositoMes ?>%</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card-mes">
-                <h3>📉 Pagamentos</h3>
-                <p>R$ <?= number_format($pagamentoMes, 2, ',', '.') ?></p>
-                <div class="barra-container">
-                    <div class="preenchimento pagamento" style="width: <?= $percentPagamentoMes ?>%">
-                        <span class="percentual"><?= $percentPagamentoMes ?>%</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card-mes">
-                <h3>🛠 Serviços</h3>
-                <p>R$ <?= number_format($totalServicosMes, 2, ',', '.') ?></p>
-                <div class="barra-container">
-                    <div class="preenchimento servico" style="width: <?= $percentServicosMes ?>%">
-                        <span class="percentual"><?= $percentServicosMes ?>%</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <canvas id="graficoMes" width="400" height="150"></canvas>
-    </div>
-
-    <script>
-    const diasMes = Array.from({
-        length: new Date(<?= $anoAtual ?>, <?= $mesAtual ?>, 0).getDate()
-    }, (_, i) => i + 1);
-
-    const valoresServicos =
-        <?php
-            $valores = [];
-            for($d=1; $d<=date('t'); $d++){
-                $dia = str_pad($d,2,'0',STR_PAD_LEFT);
-                $sql = "SELECT SUM(valor) as total FROM servicos WHERE DATE(data) = '$anoAtual-$mesAtual-$dia'";
-                $res = $conn->query($sql);
-                $row = $res->fetch_assoc();
-                $valores[] = floatval($row['total'] ?? 0.00);
-            }
-            echo json_encode($valores);
-        ?>;
-
-    const ctx = document.getElementById('graficoMes').getContext('2d');
-    const graficoMes = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: diasMes,
-            datasets: [{
-                label: 'Serviços',
-                data: valoresServicos,
-                borderColor: '#28a745',
-                backgroundColor: 'rgba(40, 167, 69, 0.2)',
-                fill: true
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    display: true
+        const valoresServicos =
+            <?php
+                $valores = [];
+                for($d=1; $d<=date('t'); $d++){
+                    $dia = str_pad($d,2,'0',STR_PAD_LEFT);
+                    $sql = "SELECT SUM(valor) as total FROM servicos WHERE DATE(data) = '$anoAtual-$mesAtual-$dia'";
+                    $res = $conn->query($sql);
+                    $row = $res->fetch_assoc();
+                    $valores[] = floatval($row['total'] ?? 0.00);
                 }
+                echo json_encode($valores);
+            ?>;
+
+        const ctx = document.getElementById('graficoMes').getContext('2d');
+        const graficoMes = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: diasMes,
+                datasets: [{
+                    label: 'Serviços',
+                    data: valoresServicos,
+                    borderColor: '#28a745',
+                    backgroundColor: 'rgba(40, 167, 69, 0.2)',
+                    fill: true
+                }]
             },
-            scales: {
-                y: {
-                    beginAtZero: true
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: true
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
                 }
             }
-        }
-    });
+        });
     </script>
 
     <div id="metas" class="card-config">
         <div class="icon">🎯</div>
         <h2>Metas</h2>
         <p>Defina ou altere as metas diárias e mensais.</p>
-        <div class="inputsMetas">
+        <div class="inputscards">
             <form action="metas.php" method="post">
-                <label for="">Meta do dia em Serviços:</label>
-                <input type="number">
-                <label for="">Meta do Dia nas Maquinas:</label>
-                <input type="number" name="" id="">
-                <label for="">Meta do dia dos pagamentos:</label>
-                <input type="number">
-                <label for="">Meta do Mês</label>
-                <input type="number">
+                <label>Meta do dia em Serviços:</label>
+                <input type="number" name="meta_dia_servicos" step="0.01">
+
+                <label>Meta do Dia nas Máquinas:</label>
+                <input type="number" name="meta_dia_maquina" step="0.01">
+
+                <label>Meta do Dia dos Pagamentos:</label>
+                <input type="number" name="meta_dia_pagamento" step="0.01">
+
+                <label>Meta do Mês:</label>
+                <input type="number" name="meta_mes" step="0.01">
+
+                <button type="submit">ENVIAR</button>
             </form>
         </div>
     </div>
@@ -218,16 +247,21 @@
         <div class="icon">👥</div>
         <h2>Funcionários</h2>
         <p>Adicione, edite ou remova funcionários do sistema.</p>
-        <div class="inputsFuncionarios">
+        <div class="inputscards">
              <form action="funcionarios.php" method="post">
                 <label for="">Nome do Funcionario</label>
                 <input type="text">
+                
                 <label for="">E-mail:</label>
                 <input type="email" name="" id="">
+                
                 <label for="">Senha:</label>
                 <input type="password">
+                
                 <label for="">Digite Novamente:</label>
                 <input type="password">
+                
+                <button type="submit">ENVIAR</button>
             </form>
         </div>
     </div>
@@ -237,7 +271,8 @@
         <h2>Serviços</h2>
         <p>Gerencie os serviços oferecidos e seus valores.</p>
     </div>
-
+    </main>
 </body>
+    
 
 </html>
